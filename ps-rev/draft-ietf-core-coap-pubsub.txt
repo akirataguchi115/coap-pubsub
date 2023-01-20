@@ -5,9 +5,9 @@
 Constrained RESTful Environments                               M. Koster
 Internet-Draft                                               SmartThings
 Intended status: Standards Track                              A. Keranen
-Expires: 20 July 2023                                         J. Jimenez
+Expires: 24 July 2023                                         J. Jimenez
                                                                 Ericsson
-                                                         16 January 2023
+                                                         20 January 2023
 
 
 Publish-Subscribe Broker for the Constrained Application Protocol (CoAP)
@@ -48,7 +48,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 20 July 2023.
+   This Internet-Draft will expire on 24 July 2023.
 
 Copyright Notice
 
@@ -70,12 +70,12 @@ Table of Contents
      1.1.  Requirements Language
      1.2.  Terminology
    2.  Architecture
-     2.1.  CoAP Pub/sub Architecture
-     2.2.  CoAP Pub/sub Broker
-     2.3.  CoAP Pub/sub Client
-     2.4.  CoAP Pub/sub Topic
-     2.5.  Brokerless Pub/sub
-   3.  CoAP Pub/sub REST API
+     2.1.  CoAP pub/sub Architecture
+     2.2.  CoAP pub/sub Broker
+     2.3.  CoAP pub/sub Client
+     2.4.  CoAP pub/sub Topic
+     2.5.  Brokerless pub/sub
+   3.  CoAP pub/sub REST API
      3.1.  DISCOVERY
      3.2.  CREATE
      3.3.  PUBLISH
@@ -83,7 +83,7 @@ Table of Contents
      3.5.  UNSUBSCRIBE
      3.6.  READ
      3.7.  REMOVE
-   4.  CoAP Pub/sub Operation with Resource Directory
+   4.  CoAP pub/sub Operation with Resource Directory
    5.  Sleep-Wake Operation
    6.  Simple Flow Control
    7.  Security Considerations
@@ -100,33 +100,32 @@ Table of Contents
 
    The Constrained Application Protocol (CoAP) [RFC7252] supports
    machine-to-machine communication across networks of constrained
-   devices.  CoAP uses a request/response model where clients make
-   requests to servers in order to request actions on resources.
-   Depending on the situation the same device may act either as a
-   server, a client, or both.
+   devices (e.g., 8-bit microcontrollers with limited RAM and ROM) and
+   constrained networks [RFC7228].  CoAP uses a request/response model
+   where clients make requests to servers in order to request actions on
+   resources.  Depending on the situation the same device may act either
+   as a server, a client, or both.
 
    One important class of constrained devices includes devices that are
    intended to run for years from a small battery, or by scavenging
    energy from their environment.  These devices have limited
    reachability because they spend most of their time in a sleeping
-   state with no network connectivity.  Devices may also have limited
-   reachability due to certain middle-boxes, such as Network Address
-   Translators (NATs) or firewalls.  Such middle-boxes often prevent
-   connecting to a device from the Internet unless the connection was
-   initiated by the device.
+   state with no network connectivity.  Another important class of nodes
+   are devices with limited reachability due to middle-boxes like
+   Network Address Translators (NATs) and firewalls.
 
-   For some applications the client/server and request/response
-   communication model is not optimal but publish-subscribe
-   communication with potentially many senders and/or receivers and
-   communication via topics rather than directly with endpoints may fit
-   better.
+   For these nodes, the client/server-oriented architecture of REST can
+   be challenging when interactions are not initiated by the devices
+   themselves.  A publish/subscribe-oriented architecture where nodes
+   are separated by a broker and data is exchanged via topics might fit
+   these nodes better.
 
-   This document specifies simple extensions to CoAP for enabling
-   publish-subscribe communication using a Broker node that enables
-   store-and-forward messaging between two or more nodes.  This model
-   facilitates communication of nodes with limited reachability, enables
-   simple many-to-many communication, and eases integration with other
-   publish-subscribe systems.
+   This document applies the idea of a "Publish/Subscribe Broker" to
+   Constrained RESTful Environments.  The broker enables store-and-
+   forward data exchange between nodes, thereby facilitating the
+   communication of nodes with limited reachability, providing simple
+   many-to-many communication, and easing integration with other
+   publish/subscribe systems.
 
 1.1.  Requirements Language
 
@@ -153,10 +152,6 @@ Table of Contents
       subscriptions are matched by a Broker and publications are
       delivered by the Broker to subscribed receivers.
 
-   CoAP pub/sub service:  A group of REST resources, as defined in this
-      document, which together implement the required features of this
-      specification.
-
    CoAP pub/sub Broker:  A server node capable of receiving messages
       (publications) from and sending messages to other nodes, and able
       to match subscriptions and publications in order to route messages
@@ -174,7 +169,7 @@ Table of Contents
 
 2.  Architecture
 
-2.1.  CoAP Pub/sub Architecture
+2.1.  CoAP pub/sub Architecture
 
    Figure 1 shows the architecture of a CoAP pub/sub service.  CoAP pub/
    sub Clients interact with a CoAP pub/sub Broker through the CoAP pub/
@@ -202,7 +197,7 @@ Table of Contents
 
                     Figure 1: CoAP pub/sub Architecture
 
-2.2.  CoAP Pub/sub Broker
+2.2.  CoAP pub/sub Broker
 
    A CoAP pub/sub Broker is a CoAP Server that exposes a REST API for
    clients to use to initiate publish-subscribe interactions.  Avoiding
@@ -212,7 +207,7 @@ Table of Contents
    resource services, and potentially buffer messages, on behalf of the
    clients.
 
-2.3.  CoAP Pub/sub Client
+2.3.  CoAP pub/sub Client
 
    A CoAP pub/sub Client interacts with a CoAP pub/sub Broker using the
    CoAP pub/sub REST API defined in this document.  Clients initiate
@@ -223,7 +218,7 @@ Table of Contents
    and subscribe in order to exchange state updates with data sources
    and data sinks.
 
-2.4.  CoAP Pub/sub Topic
+2.4.  CoAP pub/sub Topic
 
    The clients and Broker use topics to identify a particular resource
    or object in a publish-subscribe system.  Topics are conventionally
@@ -250,7 +245,7 @@ Table of Contents
    responses, returns errors on subscription, and any outstanding
    subscriptions are cancelled.
 
-2.5.  Brokerless Pub/sub
+2.5.  Brokerless pub/sub
 
    In some use cases, it is desireable to use pub/sub semantics for
    peer-to-peer communication, but it is not feasible or desireable to
@@ -278,7 +273,7 @@ Table of Contents
 
                         Figure 2: Brokerless pub/sub
 
-3.  CoAP Pub/sub REST API
+3.  CoAP pub/sub REST API
 
    This section defines the REST API exposed by a CoAP pub/sub Broker to
    pub/sub Clients.  The examples throughout this section assume the use
@@ -332,7 +327,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}{?q*}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -455,7 +450,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -572,7 +567,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -672,7 +667,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -732,7 +727,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}{?q*}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -801,7 +796,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -866,7 +861,7 @@ Table of Contents
 
    URI Template:  {+ps}/{+topic}
 
-   URI Template Variables:  ps := Pub/sub REST API entry point
+   URI Template Variables:  ps := pub/sub REST API entry point
       (optional).  The entry point of the pub/sub REST API, as obtained
       from discovery, used to discover topics.
 
@@ -898,7 +893,7 @@ Table of Contents
 
                         Figure 13: Example of REMOVE
 
-4.  CoAP Pub/sub Operation with Resource Directory
+4.  CoAP pub/sub Operation with Resource Directory
 
    A CoAP pub/sub Broker may register the base URI, which is the REST
    API entry point for a pub/sub service, with a Resource Directory.  A
@@ -1065,6 +1060,11 @@ Table of Contents
    [RFC6690]  Shelby, Z., "Constrained RESTful Environments (CoRE) Link
               Format", RFC 6690, DOI 10.17487/RFC6690, August 2012,
               <https://www.rfc-editor.org/rfc/rfc6690>.
+
+   [RFC7228]  Bormann, C., Ersue, M., and A. Keranen, "Terminology for
+              Constrained-Node Networks", RFC 7228,
+              DOI 10.17487/RFC7228, May 2014,
+              <https://www.rfc-editor.org/rfc/rfc7228>.
 
    [RFC7252]  Shelby, Z., Hartke, K., and C. Bormann, "The Constrained
               Application Protocol (CoAP)", RFC 7252,
