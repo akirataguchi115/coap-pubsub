@@ -74,7 +74,6 @@ Table of Contents
      2.2.  CoAP pub/sub Broker
      2.3.  CoAP pub/sub Client
      2.4.  CoAP pub/sub Topic
-     2.5.  Brokerless pub/sub
    3.  CoAP pub/sub REST API
      3.1.  DISCOVERY
      3.2.  CREATE
@@ -245,34 +244,6 @@ Table of Contents
    responses, returns errors on subscription, and any outstanding
    subscriptions are cancelled.
 
-2.5.  Brokerless pub/sub
-
-   In some use cases, it is desireable to use pub/sub semantics for
-   peer-to-peer communication, but it is not feasible or desireable to
-   include a separate node on the network to serve as a Broker.  In
-   other use cases, it is desireable to enable one-way-only
-   communication, such as sensors pushing updates to a service.
-
-   Figure 2 shows an arrangement for using CoAP pub/sub in a
-   "Brokerless" configuration between peer nodes.  Nodes in a Brokerless
-   system may act as both Broker and client.  A node that supports
-   Broker functionality may be pre-configured with topics that expose
-   services and resources.  Brokerless peer nodes can be mixed with
-   client and Broker nodes in a system with full interoperability.
-
-                     Peer         pub/sub          Peer
-                   +-------+         |         +-------+
-                   | CoAP  |         |         | CoAP  |
-                   |pub/sub|---------|---------|pub/sub|
-                   |Client |         |         |Broker |
-                   +-------+         |         +-------+
-                   | CoAP  |         |         | CoAP  |
-                   |pub/sub|---------|---------|pub/sub|
-                   |Broker |         |         |Client |
-                   +-------+         |         +-------+
-
-                        Figure 2: Brokerless pub/sub
-
 3.  CoAP pub/sub REST API
 
    This section defines the REST API exposed by a CoAP pub/sub Broker to
@@ -291,7 +262,7 @@ Table of Contents
    a network by exposing a link to the entry point of its pub/sub API at
    its .well-known/core location [RFC6690].  A CoAP pub/sub Broker MAY
    register its pub/sub REST API entry point with a Resource Directory.
-   Figure 3 shows an example of a client discovering a local pub/sub API
+   Figure 2 shows an example of a client discovering a local pub/sub API
    using CoAP Simple Discovery.  A Broker wishing to advertise the CoAP
    pub/sub API for Simple Discovery or through a Resource Directory MUST
    use the link relation rt=core.ps.  A Broker MAY advertise its
@@ -301,7 +272,7 @@ Table of Contents
    A CoAP pub/sub Broker MAY offer a topic discovery entry point to
    enable Clients to find topics of interest, either by topic name or by
    link attributes which may be registered when the topic is created.
-   Figure 4 shows an example of a client looking for a topic with a
+   Figure 3 shows an example of a client looking for a topic with a
    resource type (rt) of "temperature" using Discover.  The client then
    receives the URI of the resource and its content-format.  A pub/sub
    Broker wishing to advertise topic discovery MUST use the relation
@@ -310,7 +281,7 @@ Table of Contents
    A CoAP pub/sub Broker MAY provide topic discovery functionality
    through the .well-known/core resource.  Links to topics may be
    exposed at .well-known/core in addition to links to the pub/sub API.
-   Figure 5 shows an example of topic discovery through .well-known/
+   Figure 4 shows an example of topic discovery through .well-known/
    core.
 
    Topics in the broker may be created in hierarchies (see Section 3.2)
@@ -362,7 +333,7 @@ Table of Contents
             | </ps/>;rt=core.ps;rt=core.ps.discover;ct=40 --|
             |                                               |
 
-               Figure 3: Example of DISCOVER pub/sub function
+               Figure 2: Example of DISCOVER pub/sub function
 
           Client                                          Broker
             |                                               |
@@ -373,7 +344,7 @@ Table of Contents
             |   </ps/currentTemp>;rt="temperature";ct=50 ---|
             |                                               |
 
-                    Figure 4: Example of DISCOVER topic
+                    Figure 3: Example of DISCOVER topic
 
           Client                                          Broker
             |                                               |
@@ -384,22 +355,20 @@ Table of Contents
             |   </ps/currentTemp>;rt="temperature";ct=50 ---|
             |                                               |
 
-                    Figure 5: Example of DISCOVER topic
+                    Figure 4: Example of DISCOVER topic
 
 3.2.  CREATE
 
    A CoAP pub/sub broker SHOULD allow Clients to create new topics on
-   the broker using CREATE.  Some exceptions are for fixed brokerless
-   devices and pre-configured brokers in dedicated installations.  A
-   client wishing to create a topic MUST use a CoAP POST to the pub/sub
-   API with a payload indicating the desired topic.  The topic
-   specification sent in the payload MUST use a supported serialization
-   of the CoRE link format [RFC6690].  The target of the link MUST be a
-   URI formatted string.  The client MUST indicate the desired content
-   format for publishes to the topic by using the ct (Content Format)
-   link attribute in the link-format payload.  Additional link target
-   attributes and relation values MAY be included in the topic
-   specification link when a topic is created.
+   the broker using CREATE.  A client wishing to create a topic MUST use
+   a CoAP POST to the pub/sub API with a payload indicating the desired
+   topic.  The topic specification sent in the payload MUST use a
+   supported serialization of the CoRE link format [RFC6690].  The
+   target of the link MUST be a URI formatted string.  The client MUST
+   indicate the desired content format for publishes to the topic by
+   using the ct (Content Format) link attribute in the link-format
+   payload.  Additional link target attributes and relation values MAY
+   be included in the topic specification link when a topic is created.
 
    The client MAY indicate the lifetime of the topic by including the
    Max-Age option in the CREATE request.
@@ -410,7 +379,7 @@ Table of Contents
    format [RFC6690], such as application/link-format (ct=40) or its JSON
    or CBOR serializations.  If a topic is created which describes a link
    serialization, that topic may then have sub-topics created under it
-   as shown in Figure 7.
+   as shown in Figure 6.
 
    Ony one level in the topic hierarchy may be created as a result of a
    CREATE operation, unless create on PUBLISH is supported (see
@@ -468,7 +437,7 @@ Table of Contents
 
    Failure:  4.01 "Unauthorized".  Authorization failure.
 
-   Figure 6 shows an example of a topic called "topic1" being
+   Figure 5 shows an example of a topic called "topic1" being
    successfully created.
 
           Client                                          Broker
@@ -479,7 +448,7 @@ Table of Contents
             |               Location: /ps/topic1            |
             |                                               |
 
-                     Figure 6: Example of CREATE topic
+                     Figure 5: Example of CREATE topic
 
           Client                                          Broker
             |                                               |
@@ -495,7 +464,7 @@ Table of Contents
             |                                               |
             |                                               |
 
-               Figure 7: Example of CREATE of topic hierarchy
+               Figure 6: Example of CREATE of topic hierarchy
 
 3.3.  PUBLISH
 
@@ -530,7 +499,7 @@ Table of Contents
    with the URI of the created topic, including all of the created path
    segments, returned via the Location-Path option.
 
-   Figure 9 shows an example of a topic being created on first PUBLISH.
+   Figure 8 shows an example of a topic being created on first PUBLISH.
 
    A Broker MAY accept PUBLISH operations using the POST method.  If a
    Broker accepts PUBLISH using POST it shall respond with the 2.04
@@ -545,7 +514,7 @@ Table of Contents
 
    A Broker MUST make a best-effort attempt to notify all clients
    subscribed on a particular topic each time it receives a publish on
-   that topic.  An example is shown in Figure 10.
+   that topic.  An example is shown in Figure 9.
 
    If a client publishes to a Broker without the Max-Age option, the
    Broker MUST refresh the topic lifetime with the most recently set
@@ -593,8 +562,8 @@ Table of Contents
    Failure:  4.29 "Too Many Requests".  The client should slow down the
       rate of publish messages for this topic (see Section 6).
 
-   Figure 8 shows an example of a new value being successfully published
-   to the topic "topic1".  See Figure 10 for an example of a Broker
+   Figure 7 shows an example of a new value being successfully published
+   to the topic "topic1".  See Figure 9 for an example of a Broker
    forwarding a message from a publishing client to a subscribed client.
 
           Client                                          Broker
@@ -605,7 +574,7 @@ Table of Contents
             | <--------------- 2.04 Changed---------------- |
             |                                               |
 
-                        Figure 8: Example of PUBLISH
+                        Figure 7: Example of PUBLISH
 
           Client                                          Broker
             |                                               |
@@ -616,7 +585,7 @@ Table of Contents
             |             Location: /ps/exa/mpl/e           |
             |                                               |
 
-                   Figure 9: Example of CREATE on PUBLISH
+                   Figure 8: Example of CREATE on PUBLISH
 
 3.4.  SUBSCRIBE
 
@@ -687,7 +656,7 @@ Table of Contents
    Failure:  4.15 "Unsupported Content Format".  Unsupported content
       format.
 
-   Figure 10 shows an example of Client2 subscribing to "topic1" and
+   Figure 9 shows an example of Client2 subscribing to "topic1" and
    receiving a response from the Broker, with a subsequent notification.
    The subscribe response from the Broker uses the last stored value
    associated with the topic1.  The notification from the Broker is sent
@@ -706,7 +675,7 @@ Table of Contents
        |          | <---------- 2.05 Content Observe:11 --------- |
        |          |                                               |
 
-                      Figure 10: Example of SUBSCRIBE
+                       Figure 9: Example of SUBSCRIBE
 
 3.5.  UNSUBSCRIBE
 
@@ -751,7 +720,7 @@ Table of Contents
 
    Failure:  4.04 "Not Found".  Topic does not exist.
 
-   Figure 11 shows an example of a client unsubscribe using the
+   Figure 10 shows an example of a client unsubscribe using the
    Observe=1 cancellation method.
 
           Client                                          Broker
@@ -761,7 +730,7 @@ Table of Contents
             | <------------- 2.05 Content ----------------- |
             |                                               |
 
-                     Figure 11: Example of UNSUBSCRIBE
+                     Figure 10: Example of UNSUBSCRIBE
 
 3.6.  READ
 
@@ -815,7 +784,7 @@ Table of Contents
    Failure:  4.15 "Unsupported Content Format".  Unsupported content-
       format.
 
-   Figure 12 shows an example of a successful READ from topic1, followed
+   Figure 11 shows an example of a successful READ from topic1, followed
    by a Publish on the topic, followed at some time later by a read of
    the updated value from the recent Publish.
 
@@ -836,7 +805,7 @@ Table of Contents
        |          | <----------- 2.05 Content "1033.3" ---------- |
        |          |                                               |
 
-                         Figure 12: Example of READ
+                         Figure 11: Example of READ
 
 3.7.  REMOVE
 
@@ -881,7 +850,7 @@ Table of Contents
 
    Failure:  4.04 "Not Found".  Topic does not exist.
 
-   Figure 13 shows a successful remove of topic1.
+   Figure 12 shows a successful remove of topic1.
 
            Client                                         Broker
             |                                               |
@@ -891,7 +860,7 @@ Table of Contents
             | <-------------- 2.02 Deleted ---------------- |
             |                                               |
 
-                        Figure 13: Example of REMOVE
+                        Figure 12: Example of REMOVE
 
 4.  CoAP pub/sub Operation with Resource Directory
 
