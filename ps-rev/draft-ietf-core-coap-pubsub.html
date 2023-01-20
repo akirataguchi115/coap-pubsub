@@ -1169,7 +1169,7 @@ connectivity and/or up-time.<a href="#section-abstract-1" class="pilcrow">¶</a>
             <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-architecture" class="internal xref">Architecture</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
-                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-coap-pub-sub-architecture" class="internal xref">CoAP pub/sub Architecture</a></p>
+                <p id="section-toc.1-1.2.2.1.1"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-coap-publish-subscribe-arch" class="internal xref">CoAP Publish-Subscribe Architecture</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
                 <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-coap-pub-sub-broker" class="internal xref">CoAP pub/sub Broker</a></p>
@@ -1286,30 +1286,26 @@ should also be familiar with the terms and concepts discussed in
 <span>[<a href="#RFC7252" class="cite xref">RFC7252</a>]</span> and <span>[<a href="#RFC9167" class="cite xref">RFC9167</a>]</span>. The URI template
 format <span>[<a href="#RFC6570" class="cite xref">RFC6570</a>]</span> is used to describe the REST API defined in
 this specification.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
-<p id="section-1.2-2">This specification makes use of the following additional terminology:<a href="#section-1.2-2" class="pilcrow">¶</a></p>
+<p id="section-1.2-2">This specification makes use of the following terminology:<a href="#section-1.2-2" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-1.2-3">
-          <dt id="section-1.2-3.1">Topic:</dt>
+          <dt id="section-1.2-3.1">Publish-Subscribe (pub/sub):</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-3.2">
-            <p id="section-1.2-3.2.1">A unique identifier for a particular item being published and/or subscribed
-to. A Broker uses the topics to match subscriptions to publications. A reference to a Topic on a Broker
-is a valid CoAP URI as defined in <span>[<a href="#RFC7252" class="cite xref">RFC7252</a>]</span><a href="#section-1.2-3.2.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-3.2.1">A messaging paradigm where messages are published to a Broker and potential receivers can subscribe to the Broker to receive messages. The publishers do not (need to) know where the message will be eventually sent: the publications and subscriptions are matched by a Broker and publications are delivered by the Broker to subscribed receivers.<a href="#section-1.2-3.2.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-3.3">Publish-Subscribe (pub/sub):</dt>
+<dt id="section-1.2-3.3">Publish-Subscribe Broker:</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-3.4">
-            <p id="section-1.2-3.4.1">A messaging paradigm where messages are published to a Broker and potential
-receivers can subscribe to the Broker to receive messages. The publishers
-do not (need to) know where the message will be eventually sent: the publications
-and subscriptions are matched by a Broker and publications are delivered
-by the Broker to subscribed receivers.<a href="#section-1.2-3.4.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-3.4.1">A CoAP server capable of receiving messages (publications) from CoAP clients acting as publishers and forwarding them to CoAP clients acting as subscribers The Broker can also temporarily store publications to satisfy future subscriptions and pending notifications.<a href="#section-1.2-3.4.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-3.5">CoAP pub/sub Broker:</dt>
+<dt id="section-1.2-3.5">CoAP Client (publisher or subscriber):</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-3.6">
-            <p id="section-1.2-3.6.1">A server node capable of receiving messages (publications) from and sending
-messages to other nodes, and able to match subscriptions and publications
-in order to route messages to the right destinations. The Broker can also
-temporarily store publications to satisfy future subscriptions and pending notifications.<a href="#section-1.2-3.6.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-3.6.1">CoAP Clients can act as publishers or as subscribers. Publishers send CoAP messages to the Broker on specific topics. Subscribers have an ongoing observation relation (subscription) to a topic. Neither publishers nor subscribers need to have any knowledge each other; they just have to share the topic they are publishing and subscribing to.<a href="#section-1.2-3.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-1.2-3.7">Topic:</dt>
+          <dd style="margin-left: 1.5em" id="section-1.2-3.8">
+            <p id="section-1.2-3.8.1">An unique identifier for a particular item being published and/or subscribed to. A Broker uses the topics to match subscriptions to publications. A reference to a Topic on a Broker is a valid CoAP URI. Topics have to be created and configured before any data can be published. Clients may propose new topics to be created; however, it is up to the broker to choose if and how a topic is created. The broker also decides the URI of each topic.<a href="#section-1.2-3.8.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 </dl>
@@ -1322,41 +1318,33 @@ temporarily store publications to satisfy future subscriptions and pending notif
       <h2 id="name-architecture">
 <a href="#section-2" class="section-number selfRef">2. </a><a href="#name-architecture" class="section-name selfRef">Architecture</a>
       </h2>
-<div id="coap-pubsub-architecture">
+<div id="coap-publish-subscribe-architecture">
 <section id="section-2.1">
-        <h3 id="name-coap-pub-sub-architecture">
-<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-coap-pub-sub-architecture" class="section-name selfRef">CoAP pub/sub Architecture</a>
+        <h3 id="name-coap-publish-subscribe-arch">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-coap-publish-subscribe-arch" class="section-name selfRef">CoAP Publish-Subscribe Architecture</a>
         </h3>
-<p id="section-2.1-1"><a href="#arch-fig" class="auto internal xref">Figure 1</a> shows the architecture of a CoAP pub/sub service. CoAP pub/sub Clients interact
-with a CoAP pub/sub Broker through the CoAP pub/sub REST API which is hosted by
-the Broker. State information is updated between the Clients and the Broker.
-The CoAP pub/sub Broker performs a store-and-forward of state update representations
-between certain CoAP pub/sub Clients. Clients Subscribe to topics upon which
-representations are Published by other Clients, which are forwarded by the
-Broker to the subscribing clients. A CoAP pub/sub Broker may be used as a
-REST resource proxy, retaining the last published representation to supply
-in response to Read requests from Clients.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
-<span id="name-coap-pub-sub-architecture-2"></span><div id="arch-fig">
+<p id="section-2.1-1"><a href="#arch-fig" class="auto internal xref">Figure 1</a> shows a simple Publish/Subscribe architecture over CoAP. In it publishers submit their data over a RESTful interface a broker-managed resource (topic) and subscribers observe this resource using <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>. Resource state information is updated between the CoAP clients and the Broker via topics. Topics are created by the broker but the initial<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">The CoAP pub/sub Broker performs a store-and-forward of state update representations between CoAP Clients. Subscribers observing a resource will receive notifications on a best-effort basis.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<span id="name-publish-subscribe-architect"></span><div id="arch-fig">
 <figure id="figure-1">
-          <div class="alignCenter art-text artwork" id="section-2.1-2.1">
+          <div class="alignCenter art-text artwork" id="section-2.1-3.1">
 <pre>
-Clients        pub/sub         Broker
-+-------+         |
-| CoAP  |         |
-|pub/sub|---------|------+
-|Client |         |      |    +-------+
-+-------+         |      +----| CoAP  |
-                  |           |pub/sub|
-+-------+         |      +----|Broker |
-| CoAP  |         |      |    +-------+
-|pub/sub|---------|------+
-|Client |         |
-+-------+         |
-
+          CoAP                     CoAP                      CoAP
+         Clients                  Server                   Clients
+       ___________              __________    observe   ____________
+      |           |  publish   |          | .--------- |            |
+      | Publisher | ---------&gt; |          | |--------&gt; | Subscriber |
+      |___________|            |          | '--------&gt; |____________|
+            .                  |          |                   .
+            .                  |  Broker  |                   .
+       ___________             |          |   observe   ____________
+      |           |  publish   |          | .--------- |            |
+      | Publisher | ---------&gt; |          | |--------&gt; | Subscriber |
+      |___________|            |__________| '--------&gt; |____________|
 </pre>
 </div>
 <figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
-<a href="#name-coap-pub-sub-architecture-2" class="selfRef">CoAP pub/sub Architecture</a>
+<a href="#name-publish-subscribe-architect" class="selfRef">Publish/Subscribe architecture over CoAP</a>
           </figcaption></figure>
 </div>
 </section>
