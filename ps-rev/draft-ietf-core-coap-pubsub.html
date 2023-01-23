@@ -1509,17 +1509,20 @@ TODO.<a href="#section-2.1.2-1" class="pilcrow">¶</a></p>
           </h4>
 <p id="section-2.3.1-1">A client can list a collection of topics by making a GET request to the collection URI.<a href="#section-2.3.1-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.1-2">On success, the server returns a 2.05 (Content) response with a representation of the list of all topics (see Section <a href="#topic-configuration-representation" class="auto internal xref">Section 2.1.3</a>) in the collection.<a href="#section-2.3.1-2" class="pilcrow">¶</a></p>
-<p id="section-2.3.1-3">Example:
-~~~~~~~~~~~
+<p id="section-2.3.1-3">Example:<a href="#section-2.3.1-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.3.1-4">
+<pre>
 =&gt; 0.01 GET
    Uri-Path: pubsub
-   Uri-Path: topics<a href="#section-2.3.1-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.1-4">&lt;= 2.05 Content
+   Uri-Path: topics
+
+&lt;= 2.05 Content
    Content-Format: 65536
    item &lt;/pubsub/topics/1&gt;
    item &lt;/pubsub/topics/2&gt;
    item &lt;/pubsub/topics/3&gt;
-~~~~~~~~~~~<a href="#section-2.3.1-4" class="pilcrow">¶</a></p>
+</pre><a href="#section-2.3.1-4" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="topic-get-properties">
@@ -1533,19 +1536,24 @@ request to the topic collection URI.<a href="#section-2.3.2-1" class="pilcrow">�
 <p id="section-2.3.2-2">On success, the server returns a 2.05 (Content) response with a
 representation of a list of topics in the collection (see
 Section <a href="#topic-list-representation" class="auto internal xref">Section 2.2.1</a>) that match the filter.<a href="#section-2.3.2-2" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-3">Example:
-~~~~~~~~~~~
+<p id="section-2.3.2-3">Example:<a href="#section-2.3.2-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.3.2-4">
+<pre>
 =&gt; 0.05 FETCH
    Uri-Path: pubsub
    Uri-Path: topics
    Content-Format: TODO
-      TODO<a href="#section-2.3.2-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-4">&lt;= 2.05 Content<a href="#section-2.3.2-4" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-5">Content-Format: 65536<a href="#section-2.3.2-5" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-6">item &lt;/pubsub/topics/1&gt;
+      TODO
+
+&lt;= 2.05 Content
+
+   Content-Format: 65536
+
+   item &lt;/pubsub/topics/1&gt;
    item &lt;/pubsub/topics/2&gt;
    item &lt;/pubsub/topics/3&gt;
-~~~~~~~~~~~<a href="#section-2.3.2-6" class="pilcrow">¶</a></p>
+</pre><a href="#section-2.3.2-4" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="topic-create">
@@ -1556,19 +1564,23 @@ Section <a href="#topic-list-representation" class="auto internal xref">Section 
 <p id="section-2.3.3-1">A client can add a new topic to a collection of topics by submitting a representation of the initial topic configuration (see Section <a href="#topic-configuration-representation" class="auto internal xref">Section 2.1.3</a>) in a POST request to the topic collection URI.<a href="#section-2.3.3-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.3-2">The topic specification sent in the payload should use a supported serialization of the CoRE link format <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span> but other serializations like <span>[<a href="#I-D.ietf-core-coral" class="cite xref">I-D.ietf-core-coral</a>]</span> may be used in the future.<a href="#section-2.3.3-2" class="pilcrow">¶</a></p>
 <p id="section-2.3.3-3">On success, the server returns a 2.01 (Created) response indicating the topic URI of the new topic.<a href="#section-2.3.3-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.3-4">Example:
-~~~~~~~~~~~
+<p id="section-2.3.3-4">Example:<a href="#section-2.3.3-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.3.3-5">
+<pre>
 =&gt; 0.02 POST
    Uri-Path: pubsub
    Uri-Path: topics
-   Content-Format: 65536<a href="#section-2.3.3-4" class="pilcrow">¶</a></p>
-<p id="section-2.3.3-5">foo "xyz"
-   bar 42<a href="#section-2.3.3-5" class="pilcrow">¶</a></p>
-<p id="section-2.3.3-6">&lt;= 2.01 Created
+   Content-Format: 65536
+
+   foo "xyz"
+   bar 42
+
+&lt;= 2.01 Created
    Location-Path: pubsub
    Location-Path: topics
    Location-Path: 1234
-~~~~~~~~~~~<a href="#section-2.3.3-6" class="pilcrow">¶</a></p>
+</pre><a href="#section-2.3.3-5" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="topic-read-configuration">
@@ -1578,18 +1590,22 @@ Section <a href="#topic-list-representation" class="auto internal xref">Section 
           </h4>
 <p id="section-2.3.4-1">A client can read the configuration of a topic by making a GET request to the topic URI.<a href="#section-2.3.4-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.4-2">On success, the server returns a 2.05 (Content) response with a representation of the topic configuration (see Section 3.1.3).<a href="#section-2.3.4-2" class="pilcrow">¶</a></p>
-<p id="section-2.3.4-3">Example:
-~~~~~~~~~~~
+<p id="section-2.3.4-3">Example:<a href="#section-2.3.4-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.3.4-4">
+<pre>
 =&gt; 0.01 GET
    Uri-Path: pubsub
    Uri-Path: topics
-   Uri-Path: 1234<a href="#section-2.3.4-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.4-4">&lt;= 2.05 Content
+   Uri-Path: 1234
+
+&lt;= 2.05 Content
    Content-Format: 65536
-   Max-Age: 300<a href="#section-2.3.4-4" class="pilcrow">¶</a></p>
-<p id="section-2.3.4-5">foo "xyz"
+   Max-Age: 300
+
+   foo "xyz"
    bar 42
-~~~~~~~~~~~<a href="#section-2.3.4-5" class="pilcrow">¶</a></p>
+</pre><a href="#section-2.3.4-4" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="topic-update-configuration">
@@ -1599,16 +1615,20 @@ Section <a href="#topic-list-representation" class="auto internal xref">Section 
           </h4>
 <p id="section-2.3.5-1">A client can update the configuration of a topic by submitting the representation of the updated topic configuration (see Section 3.1.3) in a PUT request to the topic URI. Any existing properties in the configuration are replaced by this update.<a href="#section-2.3.5-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.5-2">On success, the server returns a 2.04 (Updated) response.<a href="#section-2.3.5-2" class="pilcrow">¶</a></p>
-<p id="section-2.3.5-3">Example:
-~~~~~~~~~~~
+<p id="section-2.3.5-3">Example:<a href="#section-2.3.5-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.3.5-4">
+<pre>
 =&gt; 0.03 PUT
    Uri-Path: pubsub
    Uri-Path: topics
    Uri-Path: 1234
-   Content-Format: 65536<a href="#section-2.3.5-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.5-4">foo "abc"<a href="#section-2.3.5-4" class="pilcrow">¶</a></p>
-<p id="section-2.3.5-5">&lt;= 2.04 Updated
-~~~~~~~~~~~<a href="#section-2.3.5-5" class="pilcrow">¶</a></p>
+   Content-Format: 65536
+
+   foo "abc"
+
+&lt;= 2.04 Updated
+</pre><a href="#section-2.3.5-4" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="topic-delete">
@@ -1619,14 +1639,17 @@ Section <a href="#topic-list-representation" class="auto internal xref">Section 
 <p id="section-2.3.6-1">A client can delete a topic by making a CoAP DELETE request on the topic URI.<a href="#section-2.3.6-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.6-2">On success, the server returns a 2.02 (Deleted) response.<a href="#section-2.3.6-2" class="pilcrow">¶</a></p>
 <p id="section-2.3.6-3">When a topic is deleted, the broker SHOULD unsubscribe all subscribers by removing them from the list of observers and returning a final 4.04 (Not Found) response as per <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span> Section 3.2.<a href="#section-2.3.6-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.6-4">Example:
-~~~~~~~~~~~
+<p id="section-2.3.6-4">Example:<a href="#section-2.3.6-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.3.6-5">
+<pre>
 =&gt; 0.04 DELETE
    Uri-Path: pubsub
    Uri-Path: topics
-   Uri-Path: 1234<a href="#section-2.3.6-4" class="pilcrow">¶</a></p>
-<p id="section-2.3.6-5">&lt;= 2.02 Deleted
-~~~~~~~~~~~<a href="#section-2.3.6-5" class="pilcrow">¶</a></p>
+   Uri-Path: 1234
+
+&lt;= 2.02 Deleted
+</pre><a href="#section-2.3.6-5" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 </section>
@@ -1707,14 +1730,18 @@ Section <a href="#topic-list-representation" class="auto internal xref">Section 
           </h4>
 <p id="section-2.4.3-1">Clients MAY discover brokers by using CoAP Simple Discovery or through a Resource Directory (RD) <span>[<a href="#RFC9167" class="cite xref">RFC9167</a>]</span>. Brokers MAY register with a RD by following the steps on Section 5 of <span>[<a href="#RFC9167" class="cite xref">RFC9167</a>]</span> with the link relation rt=core.ps.<a href="#section-2.4.3-1" class="pilcrow">¶</a></p>
 <p id="section-2.4.3-2">Brokers SHOULD expose a link to the entry point of the pubsub API at their .well-known/core location <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>.<a href="#section-2.4.3-2" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-3">Example:
-~~~~~~~~~~~
+<p id="section-2.4.3-3">Example:<a href="#section-2.4.3-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.4.3-4">
+<pre>
 =&gt; GET
    Uri-Path: ./well-known/core
-   Resource-Type: core.ps<a href="#section-2.4.3-3" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-4">&lt;= 2.05 Content
+   Resource-Type: core.ps
+
+
+&lt;= 2.05 Content
     &lt;/ps/&gt;;rt=core.ps;rt=core.ps.discover;ct=40
-~~~~~~~~~~~<a href="#section-2.4.3-4" class="pilcrow">¶</a></p>
+</pre><a href="#section-2.4.3-4" class="pilcrow">¶</a>
+</div>
 <p id="section-2.4.3-5">For details topic discovery please see <a href="#topic-discovery" class="auto internal xref">Section 2.2</a>.<a href="#section-2.4.3-5" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1738,23 +1765,31 @@ property <a href="http://coreapps.org/pubsub#accept">http://coreapps.org/pubsub#
 <p id="section-2.5.1-5">If the request does not have an acceptable content format, the server returns a 4.15 (Unsupported Content Format) response.<a href="#section-2.5.1-5" class="pilcrow">¶</a></p>
 <p id="section-2.5.1-6">If the client is sending publications too fast, the server returns a
 4.29 (Too Many Requests) response <span>[<a href="#RFC8516" class="cite xref">RFC8516</a>]</span>.<a href="#section-2.5.1-6" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-7">Example:
-~~~~~~~~~~~
+<p id="section-2.5.1-7">Example:<a href="#section-2.5.1-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.5.1-8">
+<pre>
 =&gt; 0.03 PUT
    Uri-Path: pubsub
    Uri-Path: data
    Uri-Path: 6578616d706c65
-   Content-Format: 112<a href="#section-2.5.1-7" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-8">[...SenML data...]<a href="#section-2.5.1-8" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-9">&lt;= 2.01 Created<a href="#section-2.5.1-9" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-10">=&gt; 0.03 PUT
+   Content-Format: 112
+
+   [...SenML data...]
+
+&lt;= 2.01 Created
+
+
+=&gt; 0.03 PUT
    Uri-Path: pubsub
    Uri-Path: data
    Uri-Path: 6578616d706c65
-   Content-Format: 112<a href="#section-2.5.1-10" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-11">[...updated SenML data...]<a href="#section-2.5.1-11" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-12">&lt;= 2.04 Updated
-~~~~~~~~~~~<a href="#section-2.5.1-12" class="pilcrow">¶</a></p>
+   Content-Format: 112
+
+   [...updated SenML data...]
+
+&lt;= 2.04 Updated
+</pre><a href="#section-2.5.1-8" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="subscribe">
@@ -1779,29 +1814,37 @@ Failure:<a href="#section-2.5.2-5.2.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 </dl>
-<p id="section-2.5.2-6">Example:
-~~~~~~~~~~~
+<p id="section-2.5.2-6">Example:<a href="#section-2.5.2-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.5.2-7">
+<pre>
 =&gt; 0.01 GET
    Uri-Path: pubsub
    Uri-Path: data
    Uri-Path: 6578616d706c65
-   Observe: 0<a href="#section-2.5.2-6" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-7">&lt;= 2.05 Content
+   Observe: 0
+
+&lt;= 2.05 Content
    Content-Format: 112
    Observe: 10001
-   Max-Age: 15<a href="#section-2.5.2-7" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-8">[...SenML data...]<a href="#section-2.5.2-8" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-9">&lt;= 2.05 Content
+   Max-Age: 15
+
+   [...SenML data...]
+
+&lt;= 2.05 Content
    Content-Format: 112
    Observe: 10002
-   Max-Age: 15<a href="#section-2.5.2-9" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-10">[...SenML data...]<a href="#section-2.5.2-10" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-11">&lt;= 2.05 Content
+   Max-Age: 15
+
+   [...SenML data...]
+
+&lt;= 2.05 Content
    Content-Format: 112
    Observe: 10003
-   Max-Age: 15<a href="#section-2.5.2-11" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-12">[...SenML data...]
-~~~~~~~~~~~<a href="#section-2.5.2-12" class="pilcrow">¶</a></p>
+   Max-Age: 15
+
+   [...SenML data...]
+</pre><a href="#section-2.5.2-7" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="unsubscribe">
@@ -1821,17 +1864,22 @@ Failure:<a href="#section-2.5.2-5.2.1" class="pilcrow">¶</a></p>
 <p id="section-2.5.4-2">On success, the server MUST return 2.05 (Content) response with the data.<a href="#section-2.5.4-2" class="pilcrow">¶</a></p>
 <p id="section-2.5.4-3">If the target URI does not match an existing resource or the topic is not in the fully created state (see <a href="#topic-lifecycle" class="auto internal xref">Section 2.4.1</a>), the broker SHOULD return a response code 4.04 (Not Found).<a href="#section-2.5.4-3" class="pilcrow">¶</a></p>
 <p id="section-2.5.4-4">If the Broker can not return the requested content format it MUST return a response code 4.15 (Unsupported Content Format).<a href="#section-2.5.4-4" class="pilcrow">¶</a></p>
-<p id="section-2.5.4-5">Example:
-~~~~~~~~~~~
+<p id="section-2.5.4-5">Example:<a href="#section-2.5.4-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.5.4-6">
+<pre>
 =&gt; 0.01 GET
    Uri-Path: pubsub
    Uri-Path: data
-   Uri-Path: 6578616d706c65<a href="#section-2.5.4-5" class="pilcrow">¶</a></p>
-<p id="section-2.5.4-6">&lt;= 2.05 Content
+   Uri-Path: 6578616d706c65
+
+
+&lt;= 2.05 Content
    Content-Format: 112
-   Max-Age: 15<a href="#section-2.5.4-6" class="pilcrow">¶</a></p>
-<p id="section-2.5.4-7">[...SenML data...]
-~~~~~~~~~~~<a href="#section-2.5.4-7" class="pilcrow">¶</a></p>
+   Max-Age: 15
+
+   [...SenML data...]
+</pre><a href="#section-2.5.4-6" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 </section>

@@ -331,10 +331,17 @@ Table of Contents
    representation of the list of all topics (see Section Section 2.1.3)
    in the collection.
 
-   Example: ~~~~~~~~~~~ => 0.01 GET Uri-Path: pubsub Uri-Path: topics
+   Example:
 
-   <= 2.05 Content Content-Format: 65536 item </pubsub/topics/1> item
-   </pubsub/topics/2> item </pubsub/topics/3> ~~~~~~~~~~~
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: topics
+
+   <= 2.05 Content
+      Content-Format: 65536
+      item </pubsub/topics/1>
+      item </pubsub/topics/2>
+      item </pubsub/topics/3>
 
 2.3.2.  Getting Topics by Properties
 
@@ -346,15 +353,21 @@ Table of Contents
    representation of a list of topics in the collection (see
    Section Section 2.2.1) that match the filter.
 
-   Example: ~~~~~~~~~~~ => 0.05 FETCH Uri-Path: pubsub Uri-Path: topics
-   Content-Format: TODO TODO
+   Example:
+
+   => 0.05 FETCH
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Content-Format: TODO
+         TODO
 
    <= 2.05 Content
 
-   Content-Format: 65536
+      Content-Format: 65536
 
-   item </pubsub/topics/1> item </pubsub/topics/2> item </pubsub/
-   topics/3> ~~~~~~~~~~~
+      item </pubsub/topics/1>
+      item </pubsub/topics/2>
+      item </pubsub/topics/3>
 
 2.3.3.  Creating a Topic
 
@@ -369,13 +382,20 @@ Table of Contents
    On success, the server returns a 2.01 (Created) response indicating
    the topic URI of the new topic.
 
-   Example: ~~~~~~~~~~~ => 0.02 POST Uri-Path: pubsub Uri-Path: topics
-   Content-Format: 65536
+   Example:
 
-   foo "xyz" bar 42
+   => 0.02 POST
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Content-Format: 65536
 
-   <= 2.01 Created Location-Path: pubsub Location-Path: topics Location-
-   Path: 1234 ~~~~~~~~~~~
+      foo "xyz"
+      bar 42
+
+   <= 2.01 Created
+      Location-Path: pubsub
+      Location-Path: topics
+      Location-Path: 1234
 
 2.3.4.  Reading the Configuration of a Topic
 
@@ -385,12 +405,19 @@ Table of Contents
    On success, the server returns a 2.05 (Content) response with a
    representation of the topic configuration (see Section 3.1.3).
 
-   Example: ~~~~~~~~~~~ => 0.01 GET Uri-Path: pubsub Uri-Path: topics
-   Uri-Path: 1234
+   Example:
 
-   <= 2.05 Content Content-Format: 65536 Max-Age: 300
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
 
-   foo "xyz" bar 42 ~~~~~~~~~~~
+   <= 2.05 Content
+      Content-Format: 65536
+      Max-Age: 300
+
+      foo "xyz"
+      bar 42
 
 2.3.5.  Updating the Configuration of a Topic
 
@@ -401,12 +428,17 @@ Table of Contents
 
    On success, the server returns a 2.04 (Updated) response.
 
-   Example: ~~~~~~~~~~~ => 0.03 PUT Uri-Path: pubsub Uri-Path: topics
-   Uri-Path: 1234 Content-Format: 65536
+   Example:
 
-   foo "abc"
+   => 0.03 PUT
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
+      Content-Format: 65536
 
-   <= 2.04 Updated ~~~~~~~~~~~
+      foo "abc"
+
+   <= 2.04 Updated
 
 2.3.6.  Deleting a Topic
 
@@ -419,10 +451,14 @@ Table of Contents
    subscribers by removing them from the list of observers and returning
    a final 4.04 (Not Found) response as per [RFC7641] Section 3.2.
 
-   Example: ~~~~~~~~~~~ => 0.04 DELETE Uri-Path: pubsub Uri-Path: topics
-   Uri-Path: 1234
+   Example:
 
-   <= 2.02 Deleted ~~~~~~~~~~~
+   => 0.04 DELETE
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
+
+   <= 2.02 Deleted
 
 2.4.  Publish/Subscribe
 
@@ -532,11 +568,15 @@ Table of Contents
    Brokers SHOULD expose a link to the entry point of the pubsub API at
    their .well-known/core location [RFC6690].
 
-   Example: ~~~~~~~~~~~ => GET Uri-Path: ./well-known/core Resource-
-   Type: core.ps
+   Example:
 
-   <= 2.05 Content </ps/>;rt=core.ps;rt=core.ps.discover;ct=40
-   ~~~~~~~~~~~
+   => GET
+      Uri-Path: ./well-known/core
+      Resource-Type: core.ps
+
+
+   <= 2.05 Content
+       </ps/>;rt=core.ps;rt=core.ps.discover;ct=40
 
    For details topic discovery please see Section 2.2.
 
@@ -569,19 +609,28 @@ Table of Contents
    If the client is sending publications too fast, the server returns a
    4.29 (Too Many Requests) response [RFC8516].
 
-   Example: ~~~~~~~~~~~ => 0.03 PUT Uri-Path: pubsub Uri-Path: data Uri-
-   Path: 6578616d706c65 Content-Format: 112
+   Example:
 
-   [...SenML data...]
+   => 0.03 PUT
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+      Content-Format: 112
+
+      [...SenML data...]
 
    <= 2.01 Created
 
-   => 0.03 PUT Uri-Path: pubsub Uri-Path: data Uri-Path: 6578616d706c65
-   Content-Format: 112
 
-   [...updated SenML data...]
+   => 0.03 PUT
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+      Content-Format: 112
 
-   <= 2.04 Updated ~~~~~~~~~~~
+      [...updated SenML data...]
+
+   <= 2.04 Updated
 
 2.5.2.  Subscribe
 
@@ -603,20 +652,34 @@ Table of Contents
 
       4.04 "Not Found".  Topic does not exist.
 
-   Example: ~~~~~~~~~~~ => 0.01 GET Uri-Path: pubsub Uri-Path: data Uri-
-   Path: 6578616d706c65 Observe: 0
+   Example:
 
-   <= 2.05 Content Content-Format: 112 Observe: 10001 Max-Age: 15
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+      Observe: 0
 
-   [...SenML data...]
+   <= 2.05 Content
+      Content-Format: 112
+      Observe: 10001
+      Max-Age: 15
 
-   <= 2.05 Content Content-Format: 112 Observe: 10002 Max-Age: 15
+      [...SenML data...]
 
-   [...SenML data...]
+   <= 2.05 Content
+      Content-Format: 112
+      Observe: 10002
+      Max-Age: 15
 
-   <= 2.05 Content Content-Format: 112 Observe: 10003 Max-Age: 15
+      [...SenML data...]
 
-   [...SenML data...] ~~~~~~~~~~~
+   <= 2.05 Content
+      Content-Format: 112
+      Observe: 10003
+      Max-Age: 15
+
+      [...SenML data...]
 
 2.5.3.  Unsubscribe
 
@@ -640,12 +703,19 @@ Table of Contents
    If the Broker can not return the requested content format it MUST
    return a response code 4.15 (Unsupported Content Format).
 
-   Example: ~~~~~~~~~~~ => 0.01 GET Uri-Path: pubsub Uri-Path: data Uri-
-   Path: 6578616d706c65
+   Example:
 
-   <= 2.05 Content Content-Format: 112 Max-Age: 15
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
 
-   [...SenML data...] ~~~~~~~~~~~
+
+   <= 2.05 Content
+      Content-Format: 112
+      Max-Age: 15
+
+      [...SenML data...]
 
 3.  URI Templates
 
