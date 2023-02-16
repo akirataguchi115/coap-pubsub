@@ -190,9 +190,15 @@ Table of Contents
       specified in Section 2.  Interactions about the topic data are in
       Section 2.7.
 
-   topic configuration:  TBD
+   topic configuration:  Every topic is composed of two URIs topic
+      configuration and topic data.  The topic configuration resource is
+      used by a client to create, configure, update and delete
+      configuration topics (see {#topics}).
 
-   topic data:  TBD
+   topic data:  Every topic is composed of two URIs topic configuration
+      and topic data.  The topic data resource is used by publishers and
+      subscribers to publish (POST) and subscribe (GET with Observe) to
+      data (see {#topics}).
 
 1.3.  CoAP Publish-Subscribe Architecture
 
