@@ -85,7 +85,7 @@ Table of Contents
      2.5.  Topic Configuration Interactions
        2.5.1.  Getting a topic configuration
        2.5.2.  Getting part of a topic configuration by filter
-       2.5.3.  Updating the Configuration of a Topic
+       2.5.3.  Updating the Topic Configuration
        2.5.4.  Deleting a Topic Configuration
      2.6.  Publish/Subscribe
        2.6.1.  Topic Lifecycle
@@ -573,7 +573,7 @@ Table of Contents
         "bar" : 5
       }
 
-2.5.3.  Updating the Configuration of a Topic
+2.5.3.  Updating the Topic Configuration
 
    A client can update the configuration of a topic by submitting the
    representation of the updated topic configuration (see Section 3.1.3)
