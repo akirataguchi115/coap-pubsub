@@ -1,0 +1,1026 @@
+
+
+
+
+Constrained RESTful Environments                               M. Koster
+Internet-Draft                                               SmartThings
+Intended status: Standards Track                              A. Keranen
+Expires: 26 August 2023                                       J. Jimenez
+                                                                Ericsson
+                                                        22 February 2023
+
+
+Publish-Subscribe Broker for the Constrained Application Protocol (CoAP)
+                   draft-ietf-core-coap-pubsub-latest
+
+Abstract
+
+   The Constrained Application Protocol (CoAP), and related extensions
+   are intended to support machine-to-machine communication in systems
+   where one or more nodes are resource constrained, in particular for
+   low power wireless sensor networks.  This document defines a publish-
+   subscribe Broker for CoAP that extends the capabilities of CoAP for
+   supporting nodes with long breaks in connectivity and/or up-time.
+
+Discussion Venues
+
+   This note is to be removed before publishing as an RFC.
+
+   Discussion of this document takes place on the Constrained RESTful
+   Environments Working Group mailing list (core@ietf.org), which is
+   archived at https://mailarchive.ietf.org/arch/browse/core/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/core-wg/pubsub.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 26 August 2023.
+
+Copyright Notice
+
+   Copyright (c) 2023 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+     1.1.  Requirements Language
+     1.2.  Terminology
+     1.3.  CoAP Publish-Subscribe Architecture
+   2.  Pub-Sub Topics
+     2.1.  Collection Representation
+     2.2.  Topic Creation and Configuration
+       2.2.1.  Configuration Properties
+       2.2.2.  Status Properties
+       2.2.3.  Topic Configuration Representation
+     2.3.  Topic Discovery
+       2.3.1.  Topic List Representation
+     2.4.  Topic Collection Interactions
+       2.4.1.  Retrieving all topics
+       2.4.2.  Getting Topics by Properties
+       2.4.3.  Creating a Topic
+     2.5.  Topic Configuration Interactions
+       2.5.1.  Getting a topic configuration
+       2.5.2.  Getting part of a topic configuration by filter
+       2.5.3.  Updating the Topic Configuration
+       2.5.4.  Deleting a Topic Configuration
+     2.6.  Publish/Subscribe
+       2.6.1.  Topic Lifecycle
+       2.6.2.  Rate Limiting
+       2.6.3.  Broker Discovery
+     2.7.  Topic Data Interactions
+       2.7.1.  Publish
+       2.7.2.  Subscribe
+       2.7.3.  Unsubscribe
+       2.7.4.  Read Latest Data
+   3.  URI Templates
+   4.  CoAP Pubsub Parameters
+   5.  Security Considerations
+   6.  IANA Considerations
+     6.1.  Resource Type value 'core.ps'
+     6.2.  Resource Type value 'core.ps.discover'
+   7.  Acknowledgements
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
+   Authors' Addresses
+
+1.  Introduction
+
+   The Constrained Application Protocol (CoAP) [RFC7252] supports
+   machine-to-machine communication across networks of constrained
+   devices (e.g., 8-bit microcontrollers with limited RAM and ROM) and
+   constrained networks [RFC7228].  CoAP uses a request/response model
+   where clients make requests to servers in order to request actions on
+   resources.  Depending on the situation the same device may act either
+   as a server, a client, or both.
+
+   One important class of constrained devices includes devices that are
+   intended to run for years from a small battery, or by scavenging
+   energy from their environment.  These devices have limited
+   reachability because they spend most of their time in a sleeping
+   state with no network connectivity.  Another important class of nodes
+   are devices with limited reachability due to middle-boxes like
+   Network Address Translators (NATs) and firewalls.
+
+   For these nodes, the client/server-oriented architecture of REST can
+   be challenging when interactions are not initiated by the devices
+   themselves.  A publish/subscribe-oriented architecture where nodes
+   are separated by a broker and data is exchanged via topics might fit
+   these nodes better.
+
+   This document applies the idea of a "Publish/Subscribe Broker" to
+   Constrained RESTful Environments.  The broker enables store-and-
+   forward data exchange between nodes, thereby facilitating the
+   communication of nodes with limited reachability, providing simple
+   many-to-many communication, and easing integration with other
+   publish/subscribe systems.
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+1.2.  Terminology
+
+   This specification requires readers to be familiar with all the terms
+   and concepts that are discussed in [RFC5988] and [RFC6690].  Readers
+   should also be familiar with the terms and concepts discussed in
+   [RFC7252] and [RFC9167].  The URI template format [RFC6570] is used
+   to describe the REST API defined in this specification.
+
+   This specification makes use of the following terminology:
+
+   publish-subscribe (pub/sub):  A messaging paradigm where messages are
+      published to a Broker and potential receivers can subscribe to the
+      Broker to receive messages.  The publishers do not (need to) know
+      where the message will be eventually sent: the publications and
+      subscriptions are matched by a Broker and publications are
+      delivered by the Broker to subscribed receivers.
+
+   publish-subscribe broker:  A CoAP server capable of receiving
+      messages (publications) from CoAP clients acting as publishers and
+      forwarding them to CoAP clients acting as subscribers.  The Broker
+      can also temporarily store publications to satisfy future
+      subscriptions and pending notifications.
+
+   CoAP client (publisher or subscriber):  CoAP clients can act as
+      publishers or as subscribers.  Publishers send CoAP messages to
+      the Broker on specific topics.  Subscribers have an ongoing
+      observation relation (subscription) to a topic.  Neither
+      publishers nor subscribers need to have any knowledge of each
+      other; they just have to share the topic they are publishing and
+      subscribing to.
+
+   topic:  An unique identifier for a particular item being published
+      and/or subscribed to.  A Broker uses the topics to match
+      subscriptions to publications.  A reference to a Topic on a Broker
+      is a valid CoAP URI.  Topics have to be created and configured
+      before any data can be published.  Clients may propose new topics
+      to be created; however, it is up to the broker to choose if and
+      how a topic is created.  The broker also decides the URI of each
+      topic.  Topics are represented as a resource collection.  The
+      creation, configuration, and discovery of topics at a broker is
+      specified in Section 2.  Interactions about the topic data are in
+      Section 2.7.
+
+   topic configuration:  Every topic is composed of two URIs: topic
+      configuration and topic data.  The topic configuration resource is
+      used by a client to create, configure, update and delete the
+      configuration of topics (see {#topics}).
+
+   topic data:  Every topic is composed of two URIs: topic configuration
+      and topic data.  The topic data resource is used by publishers and
+      subscribers to publish (POST) and subscribe (GET with Observe) to
+      data (see {#topics}).
+
+1.3.  CoAP Publish-Subscribe Architecture
+
+   Figure 1 shows a simple Publish/Subscribe architecture over CoAP.  In
+   it, publishers submit their data over a RESTful interface to a
+   broker-managed resource (topic) and subscribers observe this resource
+   using [RFC7641].  Resource state information is updated between the
+   CoAP clients and the Broker via topics.  Topics are created by the
+   broker but the initial configuration can be proposed by a client,
+   normally a publisher.
+
+   The broker is responsible for the store-and-forward of state update
+   representations between CoAP clients.  Subscribers observing a
+   resource will receive notifications, the delivery of which is done on
+   a best-effort basis.
+
+           CoAP                     CoAP                      CoAP
+          clients                  server                   clients
+        ___________              __________    observe   ____________
+       |           |  publish   |          | .--------- |            |
+       | publisher | ---------> |          | |--------> | subscriber |
+       |___________|            |          | '--------> |____________|
+             .                  |          |                   .
+             .                  |  broker  |                   .
+        ___________             |          |   observe   ____________
+       |           |  publish   |          | .--------- |            |
+       | publisher | ---------> |          | |--------> | subscriber |
+       |___________|            |__________| '--------> |____________|
+
+             Figure 1: Publish-subscribe architecture over CoAP
+
+   This document describes two sets of interactions, interactions to
+   configure topics and their lifecycle (see Section 2.5) and
+   interactions about the topic data (see Section 2.7).
+
+   Topic configuration interactions are discovery, create, read
+   configuration, update configuration, delete configuration and handle
+   the management of the topics.
+
+   Topic data interactions are publish, subscribe, unsubscribe, read and
+   are oriented on how data is transferred from a publisher to a
+   subscriber.
+
+2.  Pub-Sub Topics
+
+   The configuration side of a "publish/subscribe broker" consists of a
+   collection of topics.  These topics as well as the collection itself
+   are exposed by a CoAP server as resources (see Figure 2).  Each topic
+   has a topic configuration and a topic data resources.  Topic
+   configuration is used by a client creating or administering the topic
+   and topic data is used by the publishers and subscribers to the
+   topic.
+
+                        ___
+                Topic  /   \
+           Collection  \___/
+                           \
+                            \___________________________
+                             \          \               \
+                              \ ......   \ ......        \ ......
+                             : \___  :  : \___  :       : \___  :
+                      Topic  : /   \ :  : /   \ :       : /   \ :
+              Configuration  : \___/ :  : \___/ :       : \___/ :
+                             :  _|_  :  :  _|_  :  ...  :  _|_  :
+                      Topic  : /   \ :  : /   \ :       : /   \ :
+                       Data  : \___/ :  : \___/ :       : \___/ :
+                             :.......:  :.......:       :.......:
+                              topic 1    topic 2         topic n
+
+           Figure 2: Configuration and Data resources of a topic
+
+2.1.  Collection Representation
+
+   Each topic-configuration is represented as a link, where the link
+   target is the URI of the topic-configuration resource.
+
+   Each topic-data is represented as a link, where the link target is
+   the URI of the topic-data resource.
+
+   The list can be represented as a Link Format document [RFC6690].  The
+   link to each topic-configuration resource specifies the link target
+   attribute 'rt' (Resource Type), with value "core.pubsub.conf" defined
+   in this document.
+
+2.2.  Topic Creation and Configuration
+
+   A CoAP client can create a new topic by submitting an initial
+   configuration for the topic (see Section 2.4.3).  It can also read
+   and update the configuration of existing topics and delete them when
+   they are no longer needed (see Section 2.5).
+
+   The configuration of a topic itself consists of a set of properties.
+   These fall into one of two categories: configuration properties and
+   status properties.
+
+   Configuration properties can be set by a client and describe the
+   desired configuration of a topic.  Status properties are read-only,
+   managed by the server, and provide information about the actual
+   status of a topic.
+
+   When a client submits a configuration to create a new topic or update
+   an existing topic, it can only submit configuration properties.  When
+   a server returns the configuration of a topic, it returns both the
+   configuration properties and the status properties of the topic.
+
+2.2.1.  Configuration Properties
+
+   The CBOR map includes the following configuration parameters, whose
+   CBOR abbreviations are defined in Section 4 of this document.
+
+   *  'topic_name', with value the topic name of the a topic group
+      encoded as a CBOR text string.
+
+   *  'topic_data_uri', with value the URI of the topic data resource
+      for subscribing to a pubsub topic encoded as a CBOR text string.
+
+2.2.2.  Status Properties
+
+   The CBOR map includes the following status parameters, whose CBOR
+   abbreviations are defined in Section 4 of this document.
+
+   *  'rt' with value the resource type "core.pubsub.conf" associated
+      with topic-configuration resources, encoded as a CBOR text string.
+
+   *  'conf_filter', is a CBOR map containing a CBOR array and with CBOR
+      abbreviation defined in Section 4.  It is used with FETCH when
+      retrieving a partial representation of a topic configuration (see
+      Section 2.5.2).
+
+   *  'as_uri', with value the URI of the Authorization Server
+      associated with the Group Manager for the topic, encoded as a CBOR
+      text string.  Candidate clients that can configure topics will
+      have to obtain an Access Token from that Authorization Server,
+      before starting the topic configuration or creation.
+
+   *  'kdc' TBD link to key distribution center
+
+   *  'ace-pubsub-profile'?? TBD
+
+2.2.3.  Topic Configuration Representation
+
+   A topic configuration is represented as a CBOR map containing the
+   configuration properties and status properties of the topic as top-
+   level elements.
+
+   Unless specified otherwise, these are defined in this document and
+   their CBOR abbreviations are defined in Section 4.
+
+2.2.3.1.  Default Values
+
+   TBD
+
+2.3.  Topic Discovery
+
+   A Broker can offer a topic discovery entry point to enable clients to
+   find topics of interest on the basis of configuration properties and
+   status properties.
+
+   Topics can be discovered by a client on the basis of configuration
+   properties and status properties.  For example, a client could fetch
+   a list of all topics that have a property of type "foo" or that have
+   a property of type "bar" with the value 42.  Alternatively, topics
+   can also be discovered simply by getting the full list of all topics.
+
+   For broker discovery please see Section 2.6.3.
+
+2.3.1.  Topic List Representation
+
+   ??? group configuration ???
+
+   A list of group configurations is represented as a document
+   containing the corresponding group-configuration resources in the
+   list.  Each group-configuration is represented as a link, where the
+   link target is the URI of the group-configuration resource.
+
+   The list can be represented as a Link Format document [RFC6690] or a
+   CoRAL document [I-D.ietf-core-coral].
+
+2.4.  Topic Collection Interactions
+
+   These are the interactions that can happen at the topic collection
+   level.
+
+2.4.1.  Retrieving all topics
+
+   A client can request a collection of the topics present in the broker
+   by making a GET request to the collection URI.
+
+   On success, the server returns a 2.05 (Content) response with a
+   representation of the list of all topics (see Section Section 2.2.3)
+   in the collection.
+
+   Example:
+
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: topics
+
+   <= 2.05 Content
+      Content-Format: 40 (application/link-format)
+      <coap://base-url/pubsub/topics/1>rt="core.pubsub",
+      <coap://base-url/pubsub/topics/2>rt="core.pubsub",
+      <coap://base-url/pubsub/topics/3>rt="core.pubsub"
+
+2.4.2.  Getting Topics by Properties
+
+   A client can filter a collection of topics by submitting the
+   representation of a topic filter (see Section Section 2.5.2) in a
+   FETCH request to the topic collection URI.
+
+   On success, the server returns a 2.05 (Content) response with a
+   representation of a list of topics in the collection (see
+   Section Section 2.3.1) that match the filter.
+
+   Example:
+
+   => 0.05 FETCH
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Content-Format: TBD (application/pubsub+cbor)
+
+      {
+          "prop1" : x,
+          "prop2" : y,
+          "prop3" : z
+      }
+
+   <= 2.05 Content
+      Content-Format: 40 (application/link-format)
+      <coap://base-url/pubsub/topics/1>rt="core.pubsub",
+      <coap://base-url/pubsub/topics/2>rt="core.pubsub",
+      <coap://base-url/pubsub/topics/3>rt="core.pubsub"
+
+2.4.3.  Creating a Topic
+
+   A client can add a new topic to a collection of topics by submitting
+   a representation of the initial topic configuration (see
+   Section Section 2.2.3) in a POST request to the topic collection URI.
+
+   The topic specification sent in the payload should use a supported
+   serialization of the CoRE link format [RFC6690] but other
+   serializations like [I-D.ietf-core-coral] may be used in the future.
+
+   On success, the server returns a 2.01 (Created) response indicating
+   the topic URI of the new topic.
+
+   If a topic manager (TBD) is present in the broker, the topic creation
+   may require manager approval subject to certain conditions (TBD).  If
+   the conditions are not fulfilled, the manager MUST respond with a
+   4.03 (Forbidden) error.  The response MUST have Content-Format set to
+   "application/core-pubsub+cbor".
+
+   The broker MUST respond with a 4.00 (Bad Request) error in the
+   following scenarios:
+
+   *  If any received parameter is specified multiple times, invalid or
+      not recognized (malformed).
+
+   *  If the Authorization Server with URI specified in the 'as_uri'
+      parameter is not trusted and there is no alternative AS.
+
+   => 0.02 POST
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "topic_name" : sensor23,
+        "as_uri" : "coap://as.example.com/token"
+      }
+
+   <= 2.01 Created
+      Location-Path: pubsub
+      Location-Path: sensor23
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "group_name" : "sensor23",
+        "topic_data_uri" : "coap://pubsub-broker-uri/topics/sensor23/"
+        "as_uri" : "coap://as.example.com/token"
+      }
+
+2.5.  Topic Configuration Interactions
+
+   These are the interactions that can happen at the topic configuration
+   level.
+
+2.5.1.  Getting a topic configuration
+
+   A client can read the configuration of a topic by making a GET
+   request to the topic configuration URI.
+
+   On success, the server returns a 2.05 (Content) response with a
+   representation of the topic configuration.  The response has as
+   payload the representation of the topic configuration as specified in
+   Section 2.2.3.
+
+   If a topic manager (TBD) is present in the broker, retrieving topic
+   information may require manager approval subject to certain
+   conditions (TBD).  If the conditions are not fulfilled, the manager
+   MUST respond with a 4.03 (Forbidden) error.  The response MUST have
+   Content-Format set to "application/core-pubsub+cbor".
+
+   The response payload is a CBOR map, whose possible entries are
+   specified in Section 2.2.3 and use the same abbreviations defined in
+   Section 4.
+
+   Example:
+
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
+
+   <= 2.05 Content
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "group_name" : "1234",
+        "group_title" : "Topic 1234 on broker xyz",
+        foo
+        bar
+
+      }
+
+2.5.2.  Getting part of a topic configuration by filter
+
+   A client can read the configuration of a topic by making a FETCH
+   request to the topic configuration URI with a filter for specific
+   parameters.  This is done in order to retrieve part of the current
+   topic configuration.
+
+   The request contains a CBOR map with a configuration filter or
+   'conf_filter', a CBOR array and with CBOR abbreviation defined in
+   Section 4.  Each element of the array specifies one requested
+   configuration parameter or status parameter of the current group
+   configuration (see Section 2.2.3).
+
+   On success, the server returns a 2.05 (Content) response with a
+   representation of the topic configuration.  The response has as
+   payload the partial representation of the topic configuration as
+   specified in Section 2.2.3.
+
+   If a topic manager (TBD) is present in the broker, retrieving topic
+   information may require manager approval subject to certain
+   conditions (TBD).  If the conditions are not fulfilled, the manager
+   MUST respond with a 4.03 (Forbidden) error.
+
+   The response payload is a CBOR map, whose possible entries are
+   specified in Section 2.2.3 and use the same abbreviations defined in
+   Section 4.
+
+   Both request and response MUST have Content-Format set to
+   "application/core-pubsub+cbor".
+
+   Example:
+
+   => 0.05 FETCH
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "conf_filter" : [foo,
+                         bar",]
+      }
+
+   <= 2.05 Content
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "foo" : 10,
+        "bar" : 5
+      }
+
+2.5.3.  Updating the Topic Configuration
+
+   A client can update the configuration of a topic by submitting the
+   representation of the updated topic configuration (see Section 3.1.3)
+   in a PUT or POST request to the topic URI.  Any existing properties
+   in the configuration are overwritten by this update.
+
+   On success, the server returns a 2.04 (Updated) response.
+
+   Example:
+
+   => 0.03 PUT
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "foo" : 11,
+        "bar" : 5
+      }
+
+   <= 2.04 Changed
+      Content-Format: TBD2 (application/core-pubsub+cbor)
+
+      {
+        "foo" : 11,
+        "bar" : 5
+      }
+
+2.5.4.  Deleting a Topic Configuration
+
+   A client can delete a topic by making a CoAP DELETE request on the
+   topic configuration URI.
+
+   On success, the server returns a 2.02 (Deleted) response.
+
+   When a topic configuration is deleted, the broker SHOULD also delete
+   the topic data resource, unsubscribe all subscribers by removing them
+   from the list of observers and returning a final 4.04 (Not Found)
+   response as per [RFC7641] Section 3.2.
+
+   Example:
+
+   => 0.04 DELETE
+      Uri-Path: pubsub
+      Uri-Path: topics
+      Uri-Path: 1234
+
+   <= 2.02 Deleted
+
+2.6.  Publish/Subscribe
+
+   Unless a topic is configured to use a different mechanism, publish/
+   subscribe is performed as follows: A publisher publishes to a topic
+   by submitting the data in a PUT request to a broker-managed "topic
+   data resource".  This causes a change to the state of that resources.
+   Any subscriber observing the resource [RFC7641] at that time receives
+   a notification about the change to the resource state.  Observations
+   are maintained and terminated as specified in [RFC7641].
+
+   As shown in Section 2, each topic contains two resources: topic
+   configuration and topic data.  In that section we explained the
+   creation and configuration of the topic configuration resources.
+   This section will explain the management of topic data resources.
+
+   A topic data resource does not exist until some initial data has been
+   published to it.  Before initial data has been published, the topic
+   data resource yields a 4.04 (Not Found) response.  If such a "half
+   created" topic is undesired, the creator of the topic can simply
+   immediately publish some initial placeholder data to make the topic
+   "fully created".
+
+   All URIs for configuration and data resources are broker-generated.
+   There does not need to be any URI pattern dependence between the URI
+   where the data exists and the URI of the topic configuration.  Topic
+   configuration and data resources might even be hosted on different
+   servers.
+
+2.6.1.  Topic Lifecycle
+
+   When a topic is newly created, it is first placed by the server into
+   the HALF CREATED state (see Figure 3).  In this state, a client can
+   read and update the configuration of the topic and delete the topic.
+   A publisher can publish to the topic data resource.  However, a
+   subscriber cannot yet observe the topic data resource nor read the
+   latest data.
+
+                      HALF                       FULLY
+                    CREATED                     CREATED
+                      ___                         ___     Publish
+      ------------>  |   |  ------------------>  |   |  ------------.
+          Create     |___|        Publish        |___|  <-----------'
+                           \                   /         Subscribe
+                      | ^   \       ___       /   | ^
+                Read/ | |    '-->  |   |  <--'    | | Read/
+               Update | |  Delete  |___|  Delete  | | Update
+                      '-'                         '-'
+                                  DELETED
+
+                       Figure 3: Lifecycle of a Topic
+
+   After a publisher publishes to the topic for the first time, the
+   topic is placed into the FULLY CREATED state.  In this state, a
+   client can read and update the configuration of the topic and delete
+   the topic; a publisher can publish to the topic data resource; and a
+   subscriber can observe the topic data resource.
+
+   When a client deletes a topic, the topic is placed into the DELETED
+   state and shortly after removed from the server.  In this state, all
+   subscribers are removed from the list of observers of the topic data
+   resource and no further interactions with the topic are possible.
+
+2.6.2.  Rate Limiting
+
+   The server hosting a data resource may have to handle a potentially
+   very large number of publishers and subscribers at the same time.
+   This means the server can easily become overwhelmed if it receives
+   too many publications in a short period of time.
+
+   In this situation, if a client is sending publications too fast, the
+   server SHOULD return a 4.29 (Too Many Requests) response [RFC8516].
+   As described in [RFC8516], the Max-Age option [RFC7252] in this
+   response indicates the number of seconds after which the client may
+   retry.  The Broker MAY stop publishing messages from the client for
+   the indicated time.
+
+   When a client receives a 4.29 (Too Many Requests) response, it MUST
+   NOT send any new publication requests to the same topic data resource
+   before the time indicated by the Max-Age option has passed.
+
+2.6.3.  Broker Discovery
+
+   Clients MAY discover brokers by using CoAP Simple Discovery or
+   through a Resource Directory (RD) [RFC9167].  Brokers MAY register
+   with a RD by following the steps on Section 5 of [RFC9167] with the
+   link relation rt=core.ps.
+
+   Brokers SHOULD expose a link to the entry point of the pubsub API at
+   their .well-known/core location [RFC6690].
+
+   Example:
+
+   => GET
+      Uri-Path: ./well-known/core
+      Resource-Type: core.ps
+
+
+   <= 2.05 Content
+       </ps/>;rt=core.ps;ct=40
+
+   For details topic discovery please see Section 2.3.
+
+2.7.  Topic Data Interactions
+
+   TBD
+
+2.7.1.  Publish
+
+   A topic must have been created in order to publish data to it (See
+   Section Section 2.4.3) and be in the fully created state in order to
+   the publish operation to work.
+
+   A client can publish data to a topic by submitting the data in a PUT
+   request to the topic data URI.  The topic data URI is indicated by
+   the status property of type http://coreapps.org/pubsub#data
+   (http://coreapps.org/pubsub#data) in the topic configuration.  Please
+   note that the topic data URI is not the same as the topic URI.
+
+   The data MUST be in the content format specified by the configuration
+   property http://coreapps.org/pubsub#accept (http://coreapps.org/
+   pubsub#accept) in the topic configuration.  Brokers MUST reject
+   publish operations which do not use the specified content format.
+
+   On success, the server returns a 2.04 (Updated) response.  However,
+   when data is published to the topic for the first time, the server
+   may instead return a 2.01 (Created) response.
+
+   If the request does not have an acceptable content format, the server
+   returns a 4.15 (Unsupported Content Format) response.
+
+   If the client is sending publications too fast, the server returns a
+   4.29 (Too Many Requests) response [RFC8516].
+
+   Example:
+
+   => 0.03 PUT
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+      Content-Format: 112
+
+      [...SenML data...]
+
+   <= 2.01 Created
+
+
+   => 0.03 PUT
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+      Content-Format: 112
+
+      [...updated SenML data...]
+
+   <= 2.04 Updated
+
+2.7.2.  Subscribe
+
+   A client can get the latest published data and subscribe to newly
+   published data by observing the topic data URI with a GET request
+   that includes the Observe option set to 0 [RFC7641].
+
+   On success, the broker MUST return 2.05 (Content) notifications with
+   the data.
+
+   If the topic is not yet in the fully created state (see
+   Section 2.6.1) the broker SHOULD return a response code 4.04 (Not
+   Found).
+
+   The following response codes are defined for the Subscribe operation:
+
+   Success:  2.05 "Content".  Successful subscribe, current value
+      included Failure:
+
+      4.04 "Not Found".  Topic does not exist.
+
+   Example:
+
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+      Observe: 0
+
+   <= 2.05 Content
+      Content-Format: 112
+      Observe: 10001
+      Max-Age: 15
+
+      [...SenML data...]
+
+   <= 2.05 Content
+      Content-Format: 112
+      Observe: 10002
+      Max-Age: 15
+
+      [...SenML data...]
+
+   <= 2.05 Content
+      Content-Format: 112
+      Observe: 10003
+      Max-Age: 15
+
+      [...SenML data...]
+
+2.7.3.  Unsubscribe
+
+   A client can unsubscribe simply by cancelling the observation as
+   described in Section 3.6 of [RFC7641].  The client MUST either use
+   CoAP GET with the Observe Option set to 1 or send a CoAP Reset
+   message in response to a notification.
+
+2.7.4.  Read Latest Data
+
+   A client can get the latest published topic data by making a GET
+   request to the topic data URI in the broker.
+
+   On success, the server MUST return 2.05 (Content) response with the
+   data.
+
+   If the target URI does not match an existing resource or the topic is
+   not in the fully created state (see Section 2.6.1), the broker SHOULD
+   return a response code 4.04 (Not Found).
+
+   If the Broker can not return the requested content format it MUST
+   return a response code 4.15 (Unsupported Content Format).
+
+   Example:
+
+   => 0.01 GET
+      Uri-Path: pubsub
+      Uri-Path: data
+      Uri-Path: 6578616d706c65
+
+
+   <= 2.05 Content
+      Content-Format: 112
+      Max-Age: 15
+
+      [...SenML data...]
+
+3.  URI Templates
+
+4.  CoAP Pubsub Parameters
+
+   This document defines parameters used in the messages exchanged
+   between a client and the broker during the topic creation and
+   configuration process (see Section 2.2.3).  The table below
+   summarizes them and specifies the CBOR key to use instead of the full
+   descriptive name.
+
+   Note that the media type application/core-pubsub+cbor MUST be used
+   when these parameters are transported in the respective message
+   fields.
+
+        +-----------------+----------+--------------+------------+
+        | Name            | CBOR Key | CBOR Type    | Reference  |
+        +-----------------+----------+--------------+------------+
+        | topic_name      | TBD      | tstr         | [RFC-XXXX] |
+        +-----------------+----------+--------------+------------+
+        | topic_data_uri  | TBD      | tstr         | [RFC-XXXX] |
+        +-----------------+----------+--------------+------------+
+        | rt              | TBD      | tstr         | [RFC-XXXX] |
+        +-----------------+----------+--------------+------------+
+        | as_uri          | TBD      | tstr         | [RFC-XXXX] |
+        +-----------------+----------+--------------+------------+
+        | conf_filter     | TBD      | array        | [RFC-XXXX] |
+        +-----------------+----------+--------------+------------+
+        | kcd???          | TBD      | tstr / int   | [RFC-XXXX] |
+        +-----------------+----------+--------------+------------+
+
+                      Figure 4: CoAP Pubsub Parameters
+
+5.  Security Considerations
+
+   TBD.
+
+6.  IANA Considerations
+
+   This document registers one attribute value in the Resource Type
+   (rt=) registry established with [RFC6690] and appends to the
+   definition of one CoAP Response Code in the CoRE Parameters Registry.
+
+6.1.  Resource Type value 'core.ps'
+
+   *  Attribute Value: core.ps
+
+   *  Description: XXX of This document
+
+   *  Reference: This document
+
+   *  Notes: None
+
+6.2.  Resource Type value 'core.ps.discover'
+
+   *  Attribute Value: core.ps.discover
+
+   *  Description: XXX of This document
+
+   *  Reference: This document
+
+   *  Notes: None
+
+7.  Acknowledgements
+
+   The current version of this document contains a substantial
+   contribution by Klaus Hartke's proposal
+   [I-D.hartke-t2trg-coral-pubsub], which defines the topic resource
+   model and structure as well as the topic lifecycle and interactions.
+
+   The authors would like to also thank Marco Tiloca, Hannes Tschofenig,
+   Zach Shelby, Mohit Sethi, Peter van der Stok, Tim Kellogg, Anders
+   Eriksson, Goran Selander, Mikko Majanen, and Olaf Bergmann for their
+   valuable contributions and reviews.
+
+8.  References
+
+8.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC6570]  Gregorio, J., Fielding, R., Hadley, M., Nottingham, M.,
+              and D. Orchard, "URI Template", RFC 6570,
+              DOI 10.17487/RFC6570, March 2012,
+              <https://www.rfc-editor.org/rfc/rfc6570>.
+
+   [RFC6690]  Shelby, Z., "Constrained RESTful Environments (CoRE) Link
+              Format", RFC 6690, DOI 10.17487/RFC6690, August 2012,
+              <https://www.rfc-editor.org/rfc/rfc6690>.
+
+   [RFC7228]  Bormann, C., Ersue, M., and A. Keranen, "Terminology for
+              Constrained-Node Networks", RFC 7228,
+              DOI 10.17487/RFC7228, May 2014,
+              <https://www.rfc-editor.org/rfc/rfc7228>.
+
+   [RFC7252]  Shelby, Z., Hartke, K., and C. Bormann, "The Constrained
+              Application Protocol (CoAP)", RFC 7252,
+              DOI 10.17487/RFC7252, June 2014,
+              <https://www.rfc-editor.org/rfc/rfc7252>.
+
+   [RFC7641]  Hartke, K., "Observing Resources in the Constrained
+              Application Protocol (CoAP)", RFC 7641,
+              DOI 10.17487/RFC7641, September 2015,
+              <https://www.rfc-editor.org/rfc/rfc7641>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8516]  Keranen, A., ""Too Many Requests" Response Code for the
+              Constrained Application Protocol", RFC 8516,
+              DOI 10.17487/RFC8516, January 2019,
+              <https://www.rfc-editor.org/rfc/rfc8516>.
+
+   [RFC9167]  Sattler, T., Carney, R., and J. Kolker, "Registry
+              Maintenance Notification for the Extensible Provisioning
+              Protocol (EPP)", RFC 9167, DOI 10.17487/RFC9167, December
+              2021, <https://www.rfc-editor.org/rfc/rfc9167>.
+
+8.2.  Informative References
+
+   [I-D.hartke-t2trg-coral-pubsub]
+              Hartke, K., "Publish/Subscribe over the Constrained
+              Application Protocol (CoAP) using the Constrained RESTful
+              Application Language (CoRAL)", Work in Progress, Internet-
+              Draft, draft-hartke-t2trg-coral-pubsub-01, 9 May 2020,
+              <https://datatracker.ietf.org/doc/html/draft-hartke-t2trg-
+              coral-pubsub-01>.
+
+   [I-D.ietf-core-coral]
+              Amsüss, C. and T. Fossati, "The Constrained RESTful
+              Application Language (CoRAL)", Work in Progress, Internet-
+              Draft, draft-ietf-core-coral-05, 7 March 2022,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-core-
+              coral-05>.
+
+   [RFC5988]  Nottingham, M., "Web Linking", RFC 5988,
+              DOI 10.17487/RFC5988, October 2010,
+              <https://www.rfc-editor.org/rfc/rfc5988>.
+
+Authors' Addresses
+
+   Michael Koster
+   SmartThings
+   Email: Michael.Koster@smartthings.com
+
+
+   Ari Keranen
+   Ericsson
+   Email: ari.keranen@ericsson.com
+
+
+   Jaime Jimenez
+   Ericsson
+   Email: jaime@iki.fi
