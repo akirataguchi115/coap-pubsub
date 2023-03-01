@@ -5,9 +5,9 @@
 Constrained RESTful Environments                               M. Koster
 Internet-Draft                                               SmartThings
 Intended status: Standards Track                              A. Keranen
-Expires: 25 August 2023                                       J. Jimenez
+Expires: 2 September 2023                                     J. Jimenez
                                                                 Ericsson
-                                                        21 February 2023
+                                                            1 March 2023
 
 
 Publish-Subscribe Broker for the Constrained Application Protocol (CoAP)
@@ -48,7 +48,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 25 August 2023.
+   This Internet-Draft will expire on 2 September 2023.
 
 Copyright Notice
 
@@ -95,7 +95,8 @@ Table of Contents
        2.7.1.  Publish
        2.7.2.  Subscribe
        2.7.3.  Unsubscribe
-       2.7.4.  Read Latest Data
+       2.7.4.  Delete topic data
+       2.7.5.  Read Latest Data
    3.  URI Templates
    4.  CoAP Pubsub Parameters
    5.  Security Considerations
@@ -166,7 +167,7 @@ Table of Contents
 
    publish-subscribe broker:  A CoAP server capable of receiving
       messages (publications) from CoAP clients acting as publishers and
-      forwarding them to CoAP clients acting as subscribers The Broker
+      forwarding them to CoAP clients acting as subscribers.  The Broker
       can also temporarily store publications to satisfy future
       subscriptions and pending notifications.
 
@@ -174,8 +175,8 @@ Table of Contents
       publishers or as subscribers.  Publishers send CoAP messages to
       the Broker on specific topics.  Subscribers have an ongoing
       observation relation (subscription) to a topic.  Neither
-      publishers nor subscribers need to have any knowledge each other;
-      they just have to share the topic they are publishing and
+      publishers nor subscribers need to have any knowledge of each
+      other; they just have to share the topic they are publishing and
       subscribing to.
 
    topic:  An unique identifier for a particular item being published
@@ -190,12 +191,12 @@ Table of Contents
       specified in Section 2.  Interactions about the topic data are in
       Section 2.7.
 
-   topic configuration:  Every topic is composed of two URIs topic
+   topic configuration:  Every topic is composed of two URIs: topic
       configuration and topic data.  The topic configuration resource is
-      used by a client to create, configure, update and delete
-      configuration topics (see {#topics}).
+      used by a client to create, configure, update and delete the
+      configuration of topics (see {#topics}).
 
-   topic data:  Every topic is composed of two URIs topic configuration
+   topic data:  Every topic is composed of two URIs: topic configuration
       and topic data.  The topic data resource is used by publishers and
       subscribers to publish (POST) and subscribe (GET with Observe) to
       data (see {#topics}).
@@ -203,12 +204,12 @@ Table of Contents
 1.3.  CoAP Publish-Subscribe Architecture
 
    Figure 1 shows a simple Publish/Subscribe architecture over CoAP.  In
-   it, publishers submit their data over a RESTful interface a broker-
-   managed resource (topic) and subscribers observe this resource using
-   [RFC7641].  Resource state information is updated between the CoAP
-   clients and the Broker via topics.  Topics are created by the broker
-   but the initial configuration can be proposed by a client, normally a
-   publisher.
+   it, publishers submit their data over a RESTful interface to a
+   broker-managed resource (topic) and subscribers observe this resource
+   using [RFC7641].  Resource state information is updated between the
+   CoAP clients and the Broker via topics.  Topics are created by the
+   broker but the initial configuration can be proposed by a client,
+   normally a publisher.
 
    The broker is responsible for the store-and-forward of state update
    representations between CoAP clients.  Subscribers observing a
@@ -231,8 +232,8 @@ Table of Contents
              Figure 1: Publish-subscribe architecture over CoAP
 
    This document describes two sets of interactions, interactions to
-   configure topics and their lifecycle (see Section Section 2.5)and
-   interactions about the topic data (see Section Section 2.7).
+   configure topics and their lifecycle (see Section 2.5) and
+   interactions about the topic data (see Section 2.7).
 
    Topic configuration interactions are discovery, create, read
    configuration, update configuration, delete configuration and handle
@@ -260,8 +261,10 @@ Table of Contents
                              \          \               \
                               \ ......   \ ......        \ ......
                              : \___  :  : \___  :       : \___  :
-                      Topic  : /   \ :  : /   \ :       : /   \ :
-              Configuration  : \___/ :  : \___/ :       : \___/ :
+                      Topic  : / + \ :  : / + \ :       : / + \ :
+              Configuration  : \_|_/ :  : \_|_/ :       : \_|_/ :
+                             ....|....  ....|....       ....|....
+                             ....|....  ....|....       ....|....
                              :  _|_  :  :  _|_  :  ...  :  _|_  :
                       Topic  : /   \ :  : /   \ :       : /   \ :
                        Data  : \___/ :  : \___/ :       : \___/ :
@@ -276,7 +279,9 @@ Table of Contents
    target is the URI of the topic-configuration resource.
 
    Each topic-data is represented as a link, where the link target is
-   the URI of the topic-data resource.
+   the URI of the topic-data resource.  A topic-data link is an entry
+   within the topic-configuration called 'topic_data_uri' (see
+   Section 2.2.1).
 
    The list can be represented as a Link Format document [RFC6690].  The
    link to each topic-configuration resource specifies the link target
@@ -320,23 +325,10 @@ Table of Contents
    The CBOR map includes the following status parameters, whose CBOR
    abbreviations are defined in Section 4 of this document.
 
-   *  'rt' with value the resource type "core.pubsub.conf" associated
-      with topic-configuration resources, encoded as a CBOR text string.
-
    *  'conf_filter', is a CBOR map containing a CBOR array and with CBOR
-      abbreviation defined in Section 4.  It is used when with FETCH
-      when retrieving a partial representation of a topic configuration
-      (see Section 2.5.2).
-
-   *  'as_uri', with value the URI of the Authorization Server
-      associated with the Group Manager for the topic, encoded as a CBOR
-      text string.  Candidate clients that can configure topics will
-      have to obtain an Access Token from that Authorization Server,
-      before starting the topic configuration or creation.
-
-   *  'kdc' TBD link to key distribution center
-
-   *  'ace-pubsub-profile'?? TBD
+      abbreviation defined in Section 4.  It is used with FETCH when
+      retrieving a partial representation of a topic configuration (see
+      Section 2.5.2).
 
 2.2.3.  Topic Configuration Representation
 
@@ -367,13 +359,12 @@ Table of Contents
 
 2.3.1.  Topic List Representation
 
-   A list of group configurations is represented as a document
-   containing the corresponding group-configuration resources in the
-   list.  Each group-configuration is represented as a link, where the
-   link target is the URI of the group-configuration resource.
+   A list of topic configurations is represented as a document
+   containing the corresponding topic-configuration resources in the
+   list.  Each topic-configuration is represented as a link, where the
+   link target is the URI of the topic-configuration resource.
 
-   The list can be represented as a Link Format document [RFC6690] or a
-   CoRAL document [I-D.ietf-core-coral].
+   The list can be represented as a Link Format document [RFC6690]
 
 2.4.  Topic Collection Interactions
 
@@ -388,6 +379,9 @@ Table of Contents
    On success, the server returns a 2.05 (Content) response with a
    representation of the list of all topics (see Section Section 2.2.3)
    in the collection.
+
+   Depending on the permission set each client MAY receive a different
+   list of topics that they are authorized to read.
 
    Example:
 
@@ -513,13 +507,11 @@ Table of Contents
 
    <= 2.05 Content
       Content-Format: TBD2 (application/core-pubsub+cbor)
-
       {
         "group_name" : "1234",
         "group_title" : "Topic 1234 on broker xyz",
         foo
         bar
-
       }
 
 2.5.2.  Getting part of a topic configuration by filter
@@ -632,10 +624,10 @@ Table of Contents
    data resource".  This causes a change to the state of that resources.
    Any subscriber observing the resource [RFC7641] at that time receives
    a notification about the change to the resource state.  Observations
-   are maintained and terminated as specified on[RFC7641].
+   are maintained and terminated as specified in [RFC7641].
 
-   As shown in section Section 2, each topic contains two resources:
-   topic configuration and topic data.  In that section we explained the
+   As shown in Section 2, each topic contains two resources: topic
+   configuration and topic data.  In that section we explained the
    creation and configuration of the topic configuration resources.
    This section will explain the management of topic data resources.
 
@@ -655,18 +647,17 @@ Table of Contents
 2.6.1.  Topic Lifecycle
 
    When a topic is newly created, it is first placed by the server into
-   the HALF CREATED state (see Figure 3).  In this state, a client can
-   read and update the configuration of the topic and delete the topic.
-   A publisher can publish to the topic data resource.  However, a
+   the HALF CREATED state (see Figure 3).  In this state, v.  A
+   publisher can publish to the topic data resource.  However, a
    subscriber cannot yet observe the topic data resource nor read the
    latest data.
 
                       HALF                       FULLY
-                    CREATED                     CREATED
-                      ___                         ___     Publish
-      ------------>  |   |  ------------------>  |   |  ------------.
-          Create     |___|        Publish        |___|  <-----------'
-                           \                   /         Subscribe
+                    CREATED       Delete        CREATED
+                      ___       Topic Data        ___     Publish
+      ------------>  |   |  <------------------  |   |  ------------.
+          Create     |___|  ------------------>  |___|  <-----------'
+                           \      Publish      /         Subscribe
                       | ^   \       ___       /   | ^
                 Read/ | |    '-->  |   |  <--'    | | Read/
                Update | |  Delete  |___|  Delete  | | Update
@@ -681,10 +672,15 @@ Table of Contents
    the topic; a publisher can publish to the topic data resource; and a
    subscriber can observe the topic data resource.
 
-   When a client deletes a topic, the topic is placed into the DELETED
-   state and shortly after removed from the server.  In this state, all
-   subscribers are removed from the list of observers of the topic data
-   resource and no further interactions with the topic are possible.
+   When a client deletes a topic configuration, the topic is placed into
+   the DELETED state and shortly after removed from the server.  In this
+   state, all subscribers are removed from the list of observers of the
+   topic data resource and no further interactions with the topic are
+   possible.
+
+   When a client deletes a topic data, the topic is placed into the HALF
+   CREATED state, where clients can read, update and delete the
+   configuration of the topic.
 
 2.6.2.  Rate Limiting
 
@@ -836,7 +832,14 @@ Table of Contents
    CoAP GET with the Observe Option set to 1 or send a CoAP Reset
    message in response to a notification.
 
-2.7.4.  Read Latest Data
+2.7.4.  Delete topic data
+
+   A client can unsubscribe simply by cancelling the observation as
+   described in Section 3.6 of [RFC7641].  The client MUST either use
+   CoAP GET with the Observe Option set to 1 or send a CoAP Reset
+   message in response to a notification.
+
+2.7.5.  Read Latest Data
 
    A client can get the latest published topic data by making a GET
    request to the topic data URI in the broker.
@@ -933,11 +936,13 @@ Table of Contents
    contribution by Klaus Hartke's proposal
    [I-D.hartke-t2trg-coral-pubsub], which defines the topic resource
    model and structure as well as the topic lifecycle and interactions.
+   It also follows a similar architectural design as that provided by
+   Marco Tiloca's [I-D.ietf-ace-oscore-gm-admin].
 
-   The authors would like to also thank Marco Tiloca, Hannes Tschofenig,
-   Zach Shelby, Mohit Sethi, Peter van der Stok, Tim Kellogg, Anders
-   Eriksson, Goran Selander, Mikko Majanen, and Olaf Bergmann for their
-   valuable contributions and reviews.
+   The authors would like to also thank Carsten Bormann, Hannes
+   Tschofenig, Zach Shelby, Mohit Sethi, Peter van der Stok, Tim
+   Kellogg, Anders Eriksson, Goran Selander, Mikko Majanen, and Olaf
+   Bergmann for their valuable contributions and reviews.
 
 8.  References
 
@@ -995,6 +1000,14 @@ Table of Contents
               Draft, draft-hartke-t2trg-coral-pubsub-01, 9 May 2020,
               <https://datatracker.ietf.org/doc/html/draft-hartke-t2trg-
               coral-pubsub-01>.
+
+   [I-D.ietf-ace-oscore-gm-admin]
+              Tiloca, M., Höglund, R., Van der Stok, P., and F.
+              Palombini, "Admin Interface for the OSCORE Group Manager",
+              Work in Progress, Internet-Draft, draft-ietf-ace-oscore-
+              gm-admin-07, 24 October 2022,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-ace-
+              oscore-gm-admin-07>.
 
    [I-D.ietf-core-coral]
               Amsüss, C. and T. Fossati, "The Constrained RESTful
