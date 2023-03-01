@@ -70,14 +70,16 @@ Table of Contents
      1.1.  Requirements Language
      1.2.  Terminology
      1.3.  CoAP Publish-Subscribe Architecture
+     1.4.  Managing Topics
    2.  Pub-Sub Topics
      2.1.  Collection Representation
      2.2.  Topic Creation and Configuration
        2.2.1.  Configuration Properties
        2.2.2.  Status Properties
        2.2.3.  Topic Configuration Representation
-     2.3.  Topic Discovery
-       2.3.1.  Topic List Representation
+     2.3.  Discovery
+       2.3.1.  Broker Discovery
+       2.3.2.  Topic Discovery
      2.4.  Topic Collection Interactions
        2.4.1.  Retrieving all topics
        2.4.2.  Getting Topics by Properties
@@ -90,7 +92,6 @@ Table of Contents
      2.6.  Publish/Subscribe
        2.6.1.  Topic Lifecycle
        2.6.2.  Rate Limiting
-       2.6.3.  Broker Discovery
      2.7.  Topic Data Interactions
        2.7.1.  Publish
        2.7.2.  Subscribe
@@ -102,7 +103,9 @@ Table of Contents
    5.  Security Considerations
    6.  IANA Considerations
      6.1.  Resource Type value 'core.ps'
-     6.2.  Resource Type value 'core.ps.discover'
+     6.2.  Resource Type value 'core.ps.coll'
+     6.3.  Resource Type value 'core.ps.conf'
+     6.4.  Resource Type value 'core.ps.data'
    7.  Acknowledgements
    8.  References
      8.1.  Normative References
@@ -167,9 +170,7 @@ Table of Contents
 
    publish-subscribe broker:  A CoAP server capable of receiving
       messages (publications) from CoAP clients acting as publishers and
-      forwarding them to CoAP clients acting as subscribers.  The Broker
-      can also temporarily store publications to satisfy future
-      subscriptions and pending notifications.
+      forwarding them to CoAP clients acting as subscribers.
 
    CoAP client (publisher or subscriber):  CoAP clients can act as
       publishers or as subscribers.  Publishers send CoAP messages to
@@ -191,13 +192,13 @@ Table of Contents
       specified in Section 2.  Interactions about the topic data are in
       Section 2.7.
 
-   topic configuration:  Every topic is composed of two URIs: topic
-      configuration and topic data.  The topic configuration resource is
-      used by a client to create, configure, update and delete the
-      configuration of topics (see {#topics}).
+   topic configuration:  Every topic is composed of a topic
+      configuration resource which is used by a client to create,
+      configure, update and delete the configuration of topics (see
+      {#topics}).
 
-   topic data:  Every topic is composed of two URIs: topic configuration
-      and topic data.  The topic data resource is used by publishers and
+   topic data:  topic configurations may contain a property called topic
+      data.  The topic data resource is used by publishers and
       subscribers to publish (POST) and subscribe (GET with Observe) to
       data (see {#topics}).
 
@@ -243,11 +244,31 @@ Table of Contents
    are oriented on how data is transferred from a publisher to a
    subscriber.
 
+1.4.  Managing Topics
+
+   Figure 2 shows the resources of a Topic Collection that can be
+   managed at the Broker.
+
+                    ___
+          Topic    /   \
+       Collection  \___/
+                        \
+                         \____________________
+                          \___    \___        \___
+                          /   \   /   \  ...  /   \        Topic
+                          \___/   \___/       \___/   Configurations
+
+                      Figure 2: Resources of a Broker
+
+   The Broker exports a topic-collection resource, with resource type
+   "core.ps.coll" defined in Section 6 of this document.  The interfaces
+   for the topic-collection resource is defined in Section 2.4.
+
 2.  Pub-Sub Topics
 
    The configuration side of a "publish/subscribe broker" consists of a
    collection of topics.  These topics as well as the collection itself
-   are exposed by a CoAP server as resources (see Figure 2).  Each topic
+   are exposed by a CoAP server as resources (see Figure 3).  Each topic
    has a topic configuration and a topic data resources.  Topic
    configuration is used by a client creating or administering the topic
    and topic data is used by the publishers and subscribers to the
@@ -271,7 +292,7 @@ Table of Contents
                              :.......:  :.......:       :.......:
                               topic 1    topic 2         topic n
 
-           Figure 2: Configuration and Data resources of a topic
+           Figure 3: Configuration and Data resources of a topic
 
 2.1.  Collection Representation
 
@@ -314,11 +335,14 @@ Table of Contents
    The CBOR map includes the following configuration parameters, whose
    CBOR abbreviations are defined in Section 4 of this document.
 
-   *  'topic_name', with value the topic name of the a topic group
-      encoded as a CBOR text string.
+   *  'topic_name', with value the topic name encoded as a CBOR text
+      string.
 
    *  'topic_data_uri', with value the URI of the topic data resource
       for subscribing to a pubsub topic encoded as a CBOR text string.
+
+   *  'rt', with value the resource type "core.ps.conf" associated with
+      topic configuration resources, encoded as a CBOR text string
 
 2.2.2.  Status Properties
 
@@ -343,28 +367,58 @@ Table of Contents
 
    TBD
 
-2.3.  Topic Discovery
+2.3.  Discovery
+
+   Discovery involves that of the Broker, topic collections, topic
+   configurations and topic data.
+
+2.3.1.  Broker Discovery
+
+   CoAP clients MAY discover brokers by using CoAP Simple Discovery, via
+   multicast, through a Resource Directory (RD) [RFC9167] or by other
+   means specified in extensions to [RFC7252].  Brokers MAY register
+   with a RD by following the steps on Section 5 of [RFC9167] with the
+   resource type set to "core.ps" as defined in Section 6 of this
+   document.
+
+   Brokers SHOULD expose a link to the entry point of the pubsub API at
+   their .well-known/core location [RFC6690].  The specific resource
+   path is left for implementations, examples in this document may use
+   the "/ps" path.
+
+   Example:
+
+   => GET
+      Uri-Path: ./well-known/core
+      Resource-Type: core.ps
+
+
+   <= 2.05 Content
+       </ps/>;rt=core.ps;ct=40
+
+2.3.2.  Topic Discovery
 
    A Broker can offer a topic discovery entry point to enable clients to
-   find topics of interest on the basis of configuration properties and
-   status properties.
+   find topics of interest.  The resource entry point thus represents a
+   collection of related resources as specified in [RFC6690] and is
+   identified by the resource type "core.ps.coll".
 
-   Topics can be discovered by a client on the basis of configuration
-   properties and status properties.  For example, a client could fetch
-   a list of all topics that have a property of type "foo" or that have
-   a property of type "bar" with the value 42.  Alternatively, topics
-   can also be discovered simply by getting the full list of all topics.
+   The interactions with topic collections are further defined in
+   Section 2.4.
 
-   For broker discovery please see Section 2.6.3.
+   A topic collection is a group of topic configuration resources that
+   define the properties of the topics themselves (see
+   Section Section 2.2.3).  Each topic configuration is represented as a
+   link to its corresponding resource URI.  The list can be represented
+   as a Link Format document [RFC6690].  Topic configuration resources
+   are identified by the resource type "core.ps.conf".
 
-2.3.1.  Topic List Representation
-
-   A list of topic configurations is represented as a document
-   containing the corresponding topic-configuration resources in the
-   list.  Each topic-configuration is represented as a link, where the
-   link target is the URI of the topic-configuration resource.
-
-   The list can be represented as a Link Format document [RFC6690]
+   Within each topic configuration resource there is a set of
+   configuration properties (see Section Section 2.2.1).  The
+   'topic_data_uri' property contains the URI of the topic data resource
+   that a CoAP client can subscribe to.  Resources exposing resources of
+   the topic data type are expected to use the resource type
+   'core.ps.data'.
 
 2.4.  Topic Collection Interactions
 
@@ -377,8 +431,8 @@ Table of Contents
    by making a GET request to the collection URI.
 
    On success, the server returns a 2.05 (Content) response with a
-   representation of the list of all topics (see Section Section 2.2.3)
-   in the collection.
+   representation of the list of all topic configurations (see
+   Section Section 2.2.3) in the collection.
 
    Depending on the permission set each client MAY receive a different
    list of topics that they are authorized to read.
@@ -391,9 +445,9 @@ Table of Contents
 
    <= 2.05 Content
       Content-Format: 40 (application/link-format)
-      <coap://base-url/pubsub/topics/1>rt="core.pubsub",
-      <coap://base-url/pubsub/topics/2>rt="core.pubsub",
-      <coap://base-url/pubsub/topics/3>rt="core.pubsub"
+      <coap://base-url/ps/tc/a>rt="core.ps.conf",
+      <coap://base-url/ps/tc/b>rt="core.ps.conf",
+      <coap://base-url/ps/tc/c>rt="core.ps.conf"
 
 2.4.2.  Getting Topics by Properties
 
@@ -403,7 +457,7 @@ Table of Contents
 
    On success, the server returns a 2.05 (Content) response with a
    representation of a list of topics in the collection (see
-   Section Section 2.3.1) that match the filter.
+   Section Section 2.3.2) that match the filter.
 
    Example:
 
@@ -413,16 +467,12 @@ Table of Contents
       Content-Format: TBD (application/pubsub+cbor)
 
       {
-          "prop1" : x,
-          "prop2" : y,
-          "prop3" : z
+          "topic_name" : a
       }
 
    <= 2.05 Content
       Content-Format: 40 (application/link-format)
-      <coap://base-url/pubsub/topics/1>rt="core.pubsub",
-      <coap://base-url/pubsub/topics/2>rt="core.pubsub",
-      <coap://base-url/pubsub/topics/3>rt="core.pubsub"
+      <coap://base-url/ps/tc/a>rt="core.ps.conf"
 
 2.4.3.  Creating a Topic
 
@@ -456,10 +506,9 @@ Table of Contents
       Uri-Path: pubsub
       Uri-Path: topics
       Content-Format: TBD2 (application/core-pubsub+cbor)
-
+      TBD (this should be a CBOR map)
       {
-        "topic_name" : sensor23,
-        "as_uri" : "coap://as.example.com/token"
+        "topic_name" : sensor23
       }
 
    <= 2.01 Created
@@ -467,10 +516,10 @@ Table of Contents
       Location-Path: sensor23
       Content-Format: TBD2 (application/core-pubsub+cbor)
 
+      TBD (this should be a CBOR map)
       {
-        "group_name" : "sensor23",
-        "topic_data_uri" : "coap://pubsub-broker-uri/topics/sensor23/"
-        "as_uri" : "coap://as.example.com/token"
+        "topic_name" : "sensor23",
+        "topic_data_uri" : "coap://mybroker/td/sensor23"
       }
 
 2.5.  Topic Configuration Interactions
@@ -507,9 +556,9 @@ Table of Contents
 
    <= 2.05 Content
       Content-Format: TBD2 (application/core-pubsub+cbor)
+      TBD (this should be a CBOR map)
       {
-        "group_name" : "1234",
-        "group_title" : "Topic 1234 on broker xyz",
+        "topic_name" : "1234",
         foo
         bar
       }
@@ -524,7 +573,7 @@ Table of Contents
    The request contains a CBOR map with a configuration filter or
    'conf_filter', a CBOR array and with CBOR abbreviation defined in
    Section 4.  Each element of the array specifies one requested
-   configuration parameter or status parameter of the current group
+   configuration parameter or status parameter of the current topic
    configuration (see Section 2.2.3).
 
    On success, the server returns a 2.05 (Content) response with a
@@ -551,7 +600,7 @@ Table of Contents
       Uri-Path: topics
       Uri-Path: 1234
       Content-Format: TBD2 (application/core-pubsub+cbor)
-
+      TBD (this should be a CBOR map)
       {
         "conf_filter" : [foo,
                          bar",]
@@ -559,7 +608,7 @@ Table of Contents
 
    <= 2.05 Content
       Content-Format: TBD2 (application/core-pubsub+cbor)
-
+      TBD (this should be a CBOR map)
       {
         "foo" : 10,
         "bar" : 5
@@ -582,6 +631,7 @@ Table of Contents
       Uri-Path: 1234
       Content-Format: TBD2 (application/core-pubsub+cbor)
 
+      TBD (this should be a CBOR map)
       {
         "foo" : 11,
         "bar" : 5
@@ -590,6 +640,7 @@ Table of Contents
    <= 2.04 Changed
       Content-Format: TBD2 (application/core-pubsub+cbor)
 
+      TBD (this should be a CBOR map)
       {
         "foo" : 11,
         "bar" : 5
@@ -647,8 +698,9 @@ Table of Contents
 2.6.1.  Topic Lifecycle
 
    When a topic is newly created, it is first placed by the server into
-   the HALF CREATED state (see Figure 3).  In this state, v.  A
-   publisher can publish to the topic data resource.  However, a
+   the HALF CREATED state (see Figure 4).  In this state, a client can
+   read and update the configuration of the topic and delete the topic.
+   A publisher can publish to the topic data resource.  However, a
    subscriber cannot yet observe the topic data resource nor read the
    latest data.
 
@@ -661,10 +713,10 @@ Table of Contents
                       | ^   \       ___       /   | ^
                 Read/ | |    '-->  |   |  <--'    | | Read/
                Update | |  Delete  |___|  Delete  | | Update
-                      '-'                         '-'
+                      '-'  Config         Config  '-'
                                   DELETED
 
-                       Figure 3: Lifecycle of a Topic
+                       Figure 4: Lifecycle of a Topic
 
    After a publisher publishes to the topic for the first time, the
    topic is placed into the FULLY CREATED state.  In this state, a
@@ -680,7 +732,8 @@ Table of Contents
 
    When a client deletes a topic data, the topic is placed into the HALF
    CREATED state, where clients can read, update and delete the
-   configuration of the topic.
+   configuration of the topic and awaits for a publisher to begin
+   publication.
 
 2.6.2.  Rate Limiting
 
@@ -700,31 +753,10 @@ Table of Contents
    NOT send any new publication requests to the same topic data resource
    before the time indicated by the Max-Age option has passed.
 
-2.6.3.  Broker Discovery
-
-   Clients MAY discover brokers by using CoAP Simple Discovery or
-   through a Resource Directory (RD) [RFC9167].  Brokers MAY register
-   with a RD by following the steps on Section 5 of [RFC9167] with the
-   link relation rt=core.ps.
-
-   Brokers SHOULD expose a link to the entry point of the pubsub API at
-   their .well-known/core location [RFC6690].
-
-   Example:
-
-   => GET
-      Uri-Path: ./well-known/core
-      Resource-Type: core.ps
-
-
-   <= 2.05 Content
-       </ps/>;rt=core.ps;ct=40
-
-   For details topic discovery please see Section 2.3.
-
 2.7.  Topic Data Interactions
 
-   TBD
+   TBD: intro and image that shows a topic data URI hosted in a
+   different endpoint than the broker
 
 2.7.1.  Publish
 
@@ -882,23 +914,17 @@ Table of Contents
    when these parameters are transported in the respective message
    fields.
 
-        +-----------------+----------+--------------+------------+
-        | Name            | CBOR Key | CBOR Type    | Reference  |
-        +-----------------+----------+--------------+------------+
-        | topic_name      | TBD      | tstr         | [RFC-XXXX] |
-        +-----------------+----------+--------------+------------+
-        | topic_data_uri  | TBD      | tstr         | [RFC-XXXX] |
-        +-----------------+----------+--------------+------------+
-        | rt              | TBD      | tstr         | [RFC-XXXX] |
-        +-----------------+----------+--------------+------------+
-        | as_uri          | TBD      | tstr         | [RFC-XXXX] |
-        +-----------------+----------+--------------+------------+
-        | conf_filter     | TBD      | array        | [RFC-XXXX] |
-        +-----------------+----------+--------------+------------+
-        | kcd???          | TBD      | tstr / int   | [RFC-XXXX] |
-        +-----------------+----------+--------------+------------+
+        +-----------------+-----------+--------------+------------+
+        | Name            | CBOR Key  | CBOR Type    | Reference  |
+        +-----------------+-----------+--------------+------------+
+        | topic_name      | TBD1      | tstr         | [RFC-XXXX] |
+        +-----------------+-----------+--------------+------------+
+        | topic_data_uri  | TBD2      | tstr         | [RFC-XXXX] |
+        +-----------------+-----------+--------------+------------+
+        | conf_filter     | TBD3      | array        | [RFC-XXXX] |
+        +-----------------+-----------+--------------+------------+
 
-                      Figure 4: CoAP Pubsub Parameters
+                      Figure 5: CoAP Pubsub Parameters
 
 5.  Security Considerations
 
@@ -920,9 +946,29 @@ Table of Contents
 
    *  Notes: None
 
-6.2.  Resource Type value 'core.ps.discover'
+6.2.  Resource Type value 'core.ps.coll'
 
-   *  Attribute Value: core.ps.discover
+   *  Attribute Value: core.ps
+
+   *  Description: XXX of This document
+
+   *  Reference: This document
+
+   *  Notes: None
+
+6.3.  Resource Type value 'core.ps.conf'
+
+   *  Attribute Value: core.ps
+
+   *  Description: XXX of This document
+
+   *  Reference: This document
+
+   *  Notes: None
+
+6.4.  Resource Type value 'core.ps.data'
+
+   *  Attribute Value: core.ps
 
    *  Description: XXX of This document
 
