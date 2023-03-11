@@ -5,9 +5,9 @@
 Constrained RESTful Environments                               M. Koster
 Internet-Draft                                               SmartThings
 Intended status: Standards Track                              A. Keranen
-Expires: 9 September 2023                                     J. Jimenez
+Expires: 12 September 2023                                    J. Jimenez
                                                                 Ericsson
-                                                            8 March 2023
+                                                           11 March 2023
 
 
 Publish-Subscribe Broker for the Constrained Application Protocol (CoAP)
@@ -48,7 +48,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 September 2023.
+   This Internet-Draft will expire on 12 September 2023.
 
 Copyright Notice
 
