@@ -1191,13 +1191,10 @@ connectivity and/or up-time.<a href="#section-abstract-1" class="pilcrow">¶</a>
                 <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-topic-creation-and-configur" class="internal xref">Topic Creation and Configuration</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2.2.1">
-                    <p id="section-toc.1-1.2.2.2.2.1.1"><a href="#section-2.2.1" class="auto internal xref">2.2.1</a>.  <a href="#name-configuration-properties" class="internal xref">Configuration Properties</a></p>
+                    <p id="section-toc.1-1.2.2.2.2.1.1"><a href="#section-2.2.1" class="auto internal xref">2.2.1</a>.  <a href="#name-topic-properties" class="internal xref">Topic Properties</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2.2.2">
-                    <p id="section-toc.1-1.2.2.2.2.2.1"><a href="#section-2.2.2" class="auto internal xref">2.2.2</a>.  <a href="#name-status-properties" class="internal xref">Status Properties</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2.2.3">
-                    <p id="section-toc.1-1.2.2.2.2.3.1"><a href="#section-2.2.3" class="auto internal xref">2.2.3</a>.  <a href="#name-topic-resource-representati" class="internal xref">Topic Resource Representation</a></p>
+                    <p id="section-toc.1-1.2.2.2.2.2.1"><a href="#section-2.2.2" class="auto internal xref">2.2.2</a>.  <a href="#name-topic-resource-representati" class="internal xref">Topic Resource Representation</a></p>
 </li>
                 </ul>
 </li>
@@ -1494,7 +1491,7 @@ Collection  \___/
 <a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-collection-representation" class="section-name selfRef">Collection Representation</a>
         </h3>
 <p id="section-2.1-1">Each topic resource is represented as a link, where the link target is the URI of the topic resource.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
-<p id="section-2.1-2">Each topic-data is represented as a link, where the link target is the URI of the topic-data resource. A topic-data link is an entry within the topic resource called 'topic_data_uri' (see <a href="#configuration-properties" class="auto internal xref">Section 2.2.1</a>).<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">Each topic-data is represented as a link, where the link target is the URI of the topic-data resource. A topic-data link is an entry within the topic resource called 'topic_data' (see <a href="#topic-properties" class="auto internal xref">Section 2.2.1</a>).<a href="#section-2.1-2" class="pilcrow">¶</a></p>
 <p id="section-2.1-3">The list can be represented as a Link Format document <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>. The link to each topic resource specifies the link target attribute 'rt' (Resource Type), with value "core.pubsub.conf" defined in this document.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1504,50 +1501,44 @@ Collection  \___/
 <a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-topic-creation-and-configur" class="section-name selfRef">Topic Creation and Configuration</a>
         </h3>
 <p id="section-2.2-1">A CoAP client can create a new topic by submitting an initial configuration for the topic (see <a href="#topic-create" class="auto internal xref">Section 2.4.3</a>). It can also read and update the configuration of existing topics and delete them when they are no longer needed (see <a href="#topic-resource-interactions" class="auto internal xref">Section 2.5</a>).<a href="#section-2.2-1" class="pilcrow">¶</a></p>
-<p id="section-2.2-2">The configuration of a topic itself consists of a set of properties. These fall into one of two categories: configuration properties and status properties.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
-<p id="section-2.2-3">Configuration properties can be set by a client and describe the desired configuration of a topic. Status properties are read-only, managed by the server, and provide information about the actual status of a topic.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
-<p id="section-2.2-4">When a client submits a configuration to create a new topic or update an existing topic, it can only submit configuration properties. When a server returns the configuration of a topic, it returns both the configuration properties and the status properties of the topic.<a href="#section-2.2-4" class="pilcrow">¶</a></p>
-<div id="configuration-properties">
+<p id="section-2.2-2">The configuration of a topic itself consists of a set of properties that can be set by a client or by the broker.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<div id="topic-properties">
 <section id="section-2.2.1">
-          <h4 id="name-configuration-properties">
-<a href="#section-2.2.1" class="section-number selfRef">2.2.1. </a><a href="#name-configuration-properties" class="section-name selfRef">Configuration Properties</a>
+          <h4 id="name-topic-properties">
+<a href="#section-2.2.1" class="section-number selfRef">2.2.1. </a><a href="#name-topic-properties" class="section-name selfRef">Topic Properties</a>
           </h4>
 <p id="section-2.2.1-1">The CBOR map includes the following configuration parameters, whose CBOR abbreviations are defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a> of this document.<a href="#section-2.2.1-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-2.2.1-2.1">'topic_name', with value the topic name encoded as a CBOR text string.<a href="#section-2.2.1-2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-2.2.1-2.1">'topic_name': A required field used as an application identifier. It encodes the topic name as a CBOR text string. Examples of topic names include human-readable strings (e.g., "room2"), UUIDs, or other values.<a href="#section-2.2.1-2.1" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-2.2.1-2.2">'topic_data_uri', with value the URI of the topic data resource for subscribing to a pubsub topic encoded as a CBOR text string.<a href="#section-2.2.1-2.2" class="pilcrow">¶</a>
+            <li class="normal" id="section-2.2.1-2.2">'topic_data': A required field containing the CoAP URI of the topic data resource for subscribing to a pubsub topic. It encodes the URI as a CBOR text string.<a href="#section-2.2.1-2.2" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-2.2.1-2.3">'rt', with value the resource type "core.ps.conf" associated with topic resources, encoded as a CBOR text string<a href="#section-2.2.1-2.3" class="pilcrow">¶</a>
+            <li class="normal" id="section-2.2.1-2.3">'resource_type': A required field used to indicate the resource type associated with topic resources. It encodes the resource type as a CBOR text string. The value should be "core.ps.conf".<a href="#section-2.2.1-2.3" class="pilcrow">¶</a>
 </li>
-          </ul>
-</section>
-</div>
-<div id="status-properties">
-<section id="section-2.2.2">
-          <h4 id="name-status-properties">
-<a href="#section-2.2.2" class="section-number selfRef">2.2.2. </a><a href="#name-status-properties" class="section-name selfRef">Status Properties</a>
-          </h4>
-<p id="section-2.2.2-1">The CBOR map includes the following status parameters, whose CBOR abbreviations are defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a> of this document.<a href="#section-2.2.2-1" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-2.2.2-2.1">'conf_filter', is a CBOR map containing a CBOR array and with CBOR abbreviation defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>. It is used with FETCH when retrieving a partial representation of a topic resource (see <a href="#topic-fetch-resource" class="auto internal xref">Section 2.5.2</a>).<a href="#section-2.2.2-2.1" class="pilcrow">¶</a>
+            <li class="normal" id="section-2.2.1-2.4">'media_type': An optional field used to indicate the media type of the topic data resource. It encodes the media type as a CBOR text string. Example media types include "application/json".<a href="#section-2.2.1-2.4" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-2.2.1-2.5">'target_attribute': An optional field used to indicate the attribute or property of the topic_data resource. It encodes the attribute as a CBOR text string. Example attributes include "temperature".<a href="#section-2.2.1-2.5" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-2.2.1-2.6">'expiration_date': An optional field used to indicate the expiration date of the topic. It encodes the expiration date as a CBOR text string. The value should be a date string in ISO 8601 format (e.g., "2023-03-31T23:59:59Z"). The pubsub system can use this field to automatically remove topics that are no longer valid.<a href="#section-2.2.1-2.6" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-2.2.1-2.7">'max_subscribers': An optional field used to indicate the maximum number of subscribers allowed for the topic. It encodes the maximum number as a CBOR integer. If this field is not present, there is no limit to the number of subscribers allowed. The pubsub system can use this field to limit the number of subscribers for a topic.<a href="#section-2.2.1-2.7" class="pilcrow">¶</a>
 </li>
           </ul>
 </section>
 </div>
 <div id="topic-resource-representation">
-<section id="section-2.2.3">
+<section id="section-2.2.2">
           <h4 id="name-topic-resource-representati">
-<a href="#section-2.2.3" class="section-number selfRef">2.2.3. </a><a href="#name-topic-resource-representati" class="section-name selfRef">Topic Resource Representation</a>
+<a href="#section-2.2.2" class="section-number selfRef">2.2.2. </a><a href="#name-topic-resource-representati" class="section-name selfRef">Topic Resource Representation</a>
           </h4>
-<p id="section-2.2.3-1">A topic is represented as a CBOR map containing the configuration properties and status properties of the topic as top-level elements.<a href="#section-2.2.3-1" class="pilcrow">¶</a></p>
-<p id="section-2.2.3-2">Unless specified otherwise, these are defined in this document and their CBOR abbreviations are defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>.<a href="#section-2.2.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.2.2-1">A topic is represented as a CBOR map containing the configuration properties of the topic as top-level elements.<a href="#section-2.2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2.2-2">Unless specified otherwise, these are defined in this document and their CBOR abbreviations are defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>.<a href="#section-2.2.2-2" class="pilcrow">¶</a></p>
 <div id="default-values">
-<section id="section-2.2.3.1">
+<section id="section-2.2.2.1">
             <h5 id="name-default-values">
-<a href="#section-2.2.3.1" class="section-number selfRef">2.2.3.1. </a><a href="#name-default-values" class="section-name selfRef">Default Values</a>
+<a href="#section-2.2.2.1" class="section-number selfRef">2.2.2.1. </a><a href="#name-default-values" class="section-name selfRef">Default Values</a>
             </h5>
-<p id="section-2.2.3.1-1">TBD<a href="#section-2.2.3.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.2.2.1-1">TBD<a href="#section-2.2.2.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1588,8 +1579,8 @@ Collection  \___/
           </h4>
 <p id="section-2.3.2-1">A Broker can offer a topic discovery entry point to enable clients to find topics of interest. The resource entry point thus represents a collection of related resources as specified in <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span> and is identified by the resource type "core.ps.coll".<a href="#section-2.3.2-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.2-2">The interactions with topic collections are further defined in <a href="#topic-collection-interactions" class="auto internal xref">Section 2.4</a>.<a href="#section-2.3.2-2" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-3">A topic collection is a group of topic resources that define the properties of the topics themselves (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>). Each topic resource is represented as a link to its corresponding resource URI. The list can be represented as a Link Format document <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>. Topic resources are identified by the resource type "core.ps.conf".<a href="#section-2.3.2-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-4">Within each topic resource there is a set of configuration properties (see Section <a href="#configuration-properties" class="auto internal xref">Section 2.2.1</a>). The 'topic_data_uri' property contains the URI of the topic data resource that a CoAP client can subscribe to. Resources exposing resources of the topic data type are expected to use the resource type 'core.ps.data'.<a href="#section-2.3.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.3.2-3">A topic collection is a group of topic resources that define the properties of the topics themselves (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>). Each topic resource is represented as a link to its corresponding resource URI. The list can be represented as a Link Format document <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>. Topic resources are identified by the resource type "core.ps.conf".<a href="#section-2.3.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.3.2-4">Within each topic resource there is a set of configuration properties (see Section <a href="#topic-properties" class="auto internal xref">Section 2.2.1</a>). The 'topic_data_uri' property contains the URI of the topic data resource that a CoAP client can subscribe to. Resources exposing resources of the topic data type are expected to use the resource type 'core.ps.data'.<a href="#section-2.3.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1606,7 +1597,7 @@ Collection  \___/
 <a href="#section-2.4.1" class="section-number selfRef">2.4.1. </a><a href="#name-retrieving-all-topics" class="section-name selfRef">Retrieving all topics</a>
           </h4>
 <p id="section-2.4.1-1">A client can request a collection of the topics present in the broker by making a GET request to the collection URI.<a href="#section-2.4.1-1" class="pilcrow">¶</a></p>
-<p id="section-2.4.1-2">On success, the server returns a 2.05 (Content) response with a representation of the list of all topic resources (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>) in the collection.<a href="#section-2.4.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.4.1-2">On success, the server returns a 2.05 (Content) response with a representation of the list of all topic resources (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>) in the collection.<a href="#section-2.4.1-2" class="pilcrow">¶</a></p>
 <p id="section-2.4.1-3">Depending on the permission set each client <span class="bcp14">MAY</span> receive a different list of topics that they are authorized to read.<a href="#section-2.4.1-3" class="pilcrow">¶</a></p>
 <p id="section-2.4.1-4">Example:<a href="#section-2.4.1-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.4.1-5">
@@ -1658,7 +1649,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
           <h4 id="name-creating-a-topic">
 <a href="#section-2.4.3" class="section-number selfRef">2.4.3. </a><a href="#name-creating-a-topic" class="section-name selfRef">Creating a Topic</a>
           </h4>
-<p id="section-2.4.3-1">A client can add a new topic to a collection of topics by submitting a representation of the initial topic resource (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>) in a POST request to the topic collection URI.<a href="#section-2.4.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-1">A client can add a new topic to a collection of topics by submitting a representation of the initial topic resource (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>) in a POST request to the topic collection URI.<a href="#section-2.4.3-1" class="pilcrow">¶</a></p>
 <p id="section-2.4.3-2">The topic specification sent in the payload should use a supported serialization of the CoRE link format <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span> but other serializations like <span>[<a href="#I-D.ietf-core-coral" class="cite xref">I-D.ietf-core-coral</a>]</span> may be used in the future.<a href="#section-2.4.3-2" class="pilcrow">¶</a></p>
 <p id="section-2.4.3-3">On success, the server returns a 2.01 (Created) response indicating the topic URI of the new topic.<a href="#section-2.4.3-3" class="pilcrow">¶</a></p>
 <p id="section-2.4.3-4">If a topic manager (TBD) is present in the broker, the topic creation  may require manager approval subject to certain conditions (TBD). If the conditions are not fulfilled, the manager <span class="bcp14">MUST</span> respond with a 4.03 (Forbidden) error. The response <span class="bcp14">MUST</span> have Content-Format set to "application/core-pubsub+cbor".<a href="#section-2.4.3-4" class="pilcrow">¶</a></p>
@@ -1708,9 +1699,9 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <a href="#section-2.5.1" class="section-number selfRef">2.5.1. </a><a href="#name-getting-a-topic-resource" class="section-name selfRef">Getting a topic resource</a>
           </h4>
 <p id="section-2.5.1-1">A client can read the configuration of a topic by making a GET request to the topic resource URI.<a href="#section-2.5.1-1" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-2">On success, the server returns a 2.05 (Content) response with a representation of the topic resource. The response has as payload the representation of the topic resource as specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>.<a href="#section-2.5.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.5.1-2">On success, the server returns a 2.05 (Content) response with a representation of the topic resource. The response has as payload the representation of the topic resource as specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>.<a href="#section-2.5.1-2" class="pilcrow">¶</a></p>
 <p id="section-2.5.1-3">If a topic manager (TBD) is present in the broker, retrieving topic information may require manager approval subject to certain conditions (TBD). If the conditions are not fulfilled, the manager <span class="bcp14">MUST</span> respond with a 4.03 (Forbidden) error. The response <span class="bcp14">MUST</span> have Content-Format set to "application/core-pubsub+cbor".<a href="#section-2.5.1-3" class="pilcrow">¶</a></p>
-<p id="section-2.5.1-4">The response payload is a CBOR map, whose possible entries are specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a> and use the same abbreviations defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>.<a href="#section-2.5.1-4" class="pilcrow">¶</a></p>
+<p id="section-2.5.1-4">The response payload is a CBOR map, whose possible entries are specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a> and use the same abbreviations defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>.<a href="#section-2.5.1-4" class="pilcrow">¶</a></p>
 <p id="section-2.5.1-5">Example:<a href="#section-2.5.1-5" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.5.1-6">
 <pre>
@@ -1737,10 +1728,10 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <a href="#section-2.5.2" class="section-number selfRef">2.5.2. </a><a href="#name-getting-part-of-a-topic-res" class="section-name selfRef">Getting part of a topic resource by filter</a>
           </h4>
 <p id="section-2.5.2-1">A client can read the configuration of a topic by making a FETCH request to the topic resource URI with a filter for specific parameters. This is done in order to retrieve part of the current topic resource.<a href="#section-2.5.2-1" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-2">The request contains a CBOR map with a configuration filter or 'conf_filter', a CBOR array and with CBOR abbreviation defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>. Each element of the array specifies one requested configuration parameter or status parameter of the current topic resource (see <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>).<a href="#section-2.5.2-2" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-3">On success, the server returns a 2.05 (Content) response with a representation of the topic resource. The response has as payload the partial representation of the topic resource as specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>.<a href="#section-2.5.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.5.2-2">The request contains a CBOR map with a configuration filter or 'conf_filter', a CBOR array with CBOR abbreviation. Each element of the array specifies one requested configuration parameter of the current topic resource (see <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>).<a href="#section-2.5.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.5.2-3">On success, the server returns a 2.05 (Content) response with a representation of the topic resource. The response has as payload the partial representation of the topic resource as specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>.<a href="#section-2.5.2-3" class="pilcrow">¶</a></p>
 <p id="section-2.5.2-4">If a topic manager (TBD) is present in the broker, retrieving topic information may require manager approval subject to certain conditions (TBD). If the conditions are not fulfilled, the manager <span class="bcp14">MUST</span> respond with a 4.03 (Forbidden) error.<a href="#section-2.5.2-4" class="pilcrow">¶</a></p>
-<p id="section-2.5.2-5">The response payload is a CBOR map, whose possible entries are specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a> and use the same abbreviations defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>.<a href="#section-2.5.2-5" class="pilcrow">¶</a></p>
+<p id="section-2.5.2-5">The response payload is a CBOR map, whose possible entries are specified in <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a> and use the same abbreviations defined in <a href="#pubsub-parameters" class="auto internal xref">Section 4</a>.<a href="#section-2.5.2-5" class="pilcrow">¶</a></p>
 <p id="section-2.5.2-6">Both request and response <span class="bcp14">MUST</span> have Content-Format set to "application/core-pubsub+cbor".<a href="#section-2.5.2-6" class="pilcrow">¶</a></p>
 <p id="section-2.5.2-7">Example:<a href="#section-2.5.2-7" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.5.2-8">
@@ -1891,7 +1882,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <a href="#section-2.7.1" class="section-number selfRef">2.7.1. </a><a href="#name-publish" class="section-name selfRef">Publish</a>
           </h4>
 <p id="section-2.7.1-1">A topic must have been created in order to publish data to it (See Section <a href="#topic-create" class="auto internal xref">Section 2.4.3</a>) and be in the fully created state in order to the publish operation to work.<a href="#section-2.7.1-1" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-2">A client can publish data to a topic by submitting the data in a PUT request to the topic data URI. The topic data URI is indicated by the status property of type <a href="http://coreapps.org/pubsub#data">http://coreapps.org/pubsub#data</a> in the topic resource. Please note that the topic data URI is not the same as the topic URI.<a href="#section-2.7.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.7.1-2">A client can publish data to a topic by submitting the data in a PUT request to the topic data URI. The topic data URI is indicated by the property of type <a href="http://coreapps.org/pubsub#data">http://coreapps.org/pubsub#data</a> in the topic resource. Please note that the topic data URI is not the same as the topic URI.<a href="#section-2.7.1-2" class="pilcrow">¶</a></p>
 <p id="section-2.7.1-3">The data <span class="bcp14">MUST</span> be in the content format specified by the configuration
 property <a href="http://coreapps.org/pubsub#accept">http://coreapps.org/pubsub#accept</a> in the topic resource. Brokers <span class="bcp14">MUST</span> reject publish operations which do not use the specified content format.<a href="#section-2.7.1-3" class="pilcrow">¶</a></p>
 <p id="section-2.7.1-4">On success, the server returns a 2.04 (Updated) response.  However, when data is published to the topic for the first time, the server may instead return a 2.01 (Created) response.<a href="#section-2.7.1-4" class="pilcrow">¶</a></p>
@@ -2039,7 +2030,7 @@ Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
       <h2 id="name-coap-pubsub-parameters">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-coap-pubsub-parameters" class="section-name selfRef">CoAP Pubsub Parameters</a>
       </h2>
-<p id="section-4-1">This document defines parameters used in the messages exchanged between a client and the broker during the topic creation and configuration process (see <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.3</a>). The table below summarizes them and specifies the CBOR key to use instead of the full descriptive name.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-1">This document defines parameters used in the messages exchanged between a client and the broker during the topic creation and configuration process (see <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>). The table below summarizes them and specifies the CBOR key to use instead of the full descriptive name.<a href="#section-4-1" class="pilcrow">¶</a></p>
 <p id="section-4-2">Note that the media type application/core-pubsub+cbor <span class="bcp14">MUST</span> be used when these parameters are transported in the respective message fields.<a href="#section-4-2" class="pilcrow">¶</a></p>
 <span id="name-coap-pubsub-parameters-2"></span><div id="fig-CoAP-Pubsub-Parameters">
 <figure id="figure-5">
