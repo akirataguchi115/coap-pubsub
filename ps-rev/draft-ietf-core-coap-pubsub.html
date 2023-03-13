@@ -1515,7 +1515,7 @@ Collection  \___/
 </li>
             <li class="normal" id="section-2.2.1-2.3">'resource_type': A required field used to indicate the resource type associated with topic resources. It encodes the resource type as a CBOR text string. The value should be "core.ps.conf".<a href="#section-2.2.1-2.3" class="pilcrow">¶</a>
 </li>
-            <li class="normal" id="section-2.2.1-2.4">'media_type': An optional field used to indicate the media type of the topic data resource. It encodes the media type as a CBOR text string. Example media types include "application/json".<a href="#section-2.2.1-2.4" class="pilcrow">¶</a>
+            <li class="normal" id="section-2.2.1-2.4">'media_type': An optional field used to indicate the media type of the topic data resource. It encodes the media type as a CBOR text string (e.g.,"application/json").<a href="#section-2.2.1-2.4" class="pilcrow">¶</a>
 </li>
             <li class="normal" id="section-2.2.1-2.5">'target_attribute': An optional field used to indicate the attribute or property of the topic_data resource. It encodes the attribute as a CBOR text string. Example attributes include "temperature".<a href="#section-2.2.1-2.5" class="pilcrow">¶</a>
 </li>
@@ -1583,7 +1583,7 @@ Collection  \___/
 
 
 &lt;= 2.05 Content
-    &lt;/ps/&gt;;rt=core.ps;ct=40
+    &lt;/ps&gt;;rt=core.ps;ct=40
 </pre><a href="#section-2.3.1-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1596,7 +1596,7 @@ Collection  \___/
 <p id="section-2.3.2-1">A Broker can offer a topic discovery entry point to enable clients to find topics of interest. The resource entry point thus represents a collection of related resources as specified in <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span> and is identified by the resource type "core.ps.coll".<a href="#section-2.3.2-1" class="pilcrow">¶</a></p>
 <p id="section-2.3.2-2">The interactions with topic collections are further defined in <a href="#topic-collection-interactions" class="auto internal xref">Section 2.4</a>.<a href="#section-2.3.2-2" class="pilcrow">¶</a></p>
 <p id="section-2.3.2-3">A topic collection is a group of topic resources that define the properties of the topics themselves (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>). Each topic resource is represented as a link to its corresponding resource URI. The list can be represented as a Link Format document <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>. Topic resources are identified by the resource type "core.ps.conf".<a href="#section-2.3.2-3" class="pilcrow">¶</a></p>
-<p id="section-2.3.2-4">Within each topic resource there is a set of configuration properties (see Section <a href="#topic-properties" class="auto internal xref">Section 2.2.1</a>). The 'topic_data_uri' property contains the URI of the topic data resource that a CoAP client can subscribe to. Resources exposing resources of the topic data type are expected to use the resource type 'core.ps.data'.<a href="#section-2.3.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.3.2-4">Within each topic resource there is a set of configuration properties (see Section <a href="#topic-properties" class="auto internal xref">Section 2.2.1</a>). The 'topic_data' property contains the URI of the topic data resource that a CoAP client can subscribe to. Resources exposing resources of the topic data type are expected to use the resource type 'core.ps.data'.<a href="#section-2.3.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1619,14 +1619,13 @@ Collection  \___/
 <div class="alignLeft art-text artwork" id="section-2.4.1-5">
 <pre>
 =&gt; 0.01 GET
-   Uri-Path: pubsub
-   Uri-Path: topics
+   Uri-Path: ps
+   Uri-Path: tc
 
 &lt;= 2.05 Content
    Content-Format: 40 (application/link-format)
-   &lt;coap://base-url/ps/tc/a&gt;rt="core.ps.conf",
-   &lt;coap://base-url/ps/tc/b&gt;rt="core.ps.conf",
-   &lt;coap://base-url/ps/tc/c&gt;rt="core.ps.conf"
+   &lt;/ps/tc/temperature&gt;;rt="core.ps.conf",
+   &lt;/ps/tc/humidity&gt;;rt="core.ps.conf"
 </pre><a href="#section-2.4.1-5" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1640,22 +1639,25 @@ Collection  \___/
 representation of a topic filter (see Section <a href="#topic-fetch-resource" class="auto internal xref">Section 2.5.2</a>)  in a FETCH request to the topic collection URI.<a href="#section-2.4.2-1" class="pilcrow">¶</a></p>
 <p id="section-2.4.2-2">On success, the server returns a 2.05 (Content) response with a
 representation of a list of topics in the collection (see
-Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>) that match the filter.<a href="#section-2.4.2-2" class="pilcrow">¶</a></p>
+Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>) that match the filter in CoRE link format <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>.<a href="#section-2.4.2-2" class="pilcrow">¶</a></p>
 <p id="section-2.4.2-3">Example:<a href="#section-2.4.2-3" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.4.2-4">
 <pre>
 =&gt; 0.05 FETCH
-   Uri-Path: pubsub
-   Uri-Path: topics
+   Uri-Path: ps
+   Uri-Path: tc
    Content-Format: TBD (application/pubsub+cbor)
 
    {
-       "topic_name" : a
+     "resource_type" : "core.ps.conf",
+     "target_attribute" : "temperature"
    }
 
 &lt;= 2.05 Content
    Content-Format: 40 (application/link-format)
-   &lt;coap://base-url/ps/tc/a&gt;rt="core.ps.conf"
+   &lt;/living_room_sensor&gt;;anchor="coap://[2001:db8::2]/ps/tc/h9392",
+   &lt;/kitchen_sensor&gt;;anchor="coap://[2001:db8::2]/ps/tc/f3192"
+
 </pre><a href="#section-2.4.2-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1666,36 +1668,32 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <a href="#section-2.4.3" class="section-number selfRef">2.4.3. </a><a href="#name-creating-a-topic" class="section-name selfRef">Creating a Topic</a>
           </h4>
 <p id="section-2.4.3-1">A client can add a new topic to a collection of topics by submitting a representation of the initial topic resource (see Section <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>) in a POST request to the topic collection URI.<a href="#section-2.4.3-1" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-2">The topic specification sent in the payload should use a supported serialization of the CoRE link format <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span> but other serializations like <span>[<a href="#I-D.ietf-core-coral" class="cite xref">I-D.ietf-core-coral</a>]</span> may be used in the future.<a href="#section-2.4.3-2" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-3">On success, the server returns a 2.01 (Created) response indicating the topic URI of the new topic.<a href="#section-2.4.3-3" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-4">If a topic manager (TBD) is present in the broker, the topic creation  may require manager approval subject to certain conditions (TBD). If the conditions are not fulfilled, the manager <span class="bcp14">MUST</span> respond with a 4.03 (Forbidden) error. The response <span class="bcp14">MUST</span> have Content-Format set to "application/core-pubsub+cbor".<a href="#section-2.4.3-4" class="pilcrow">¶</a></p>
-<p id="section-2.4.3-5">The broker <span class="bcp14">MUST</span> respond with a 4.00 (Bad Request) error in the following scenarios:<a href="#section-2.4.3-5" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-2.4.3-6.1">If any received parameter is specified multiple times, invalid or not recognized (malformed).<a href="#section-2.4.3-6.1" class="pilcrow">¶</a>
-</li>
-            <li class="normal" id="section-2.4.3-6.2">If the Authorization Server with URI specified in the 'as_uri' parameter is not trusted and there is no alternative AS.<a href="#section-2.4.3-6.2" class="pilcrow">¶</a>
-</li>
-          </ul>
+<p id="section-2.4.3-2">On success, the server returns a 2.01 (Created) response indicating the topic URI of the new topic and the current representation of the topic resource.<a href="#section-2.4.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-3">If a topic manager is present in the broker, the topic creation  may require manager approval subject to certain conditions. If the conditions are not fulfilled, the manager <span class="bcp14">MUST</span> respond with a 4.03 (Forbidden) error. The response <span class="bcp14">MUST</span> have Content-Format set to "application/core-pubsub+cbor".<a href="#section-2.4.3-3" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-4">The broker <span class="bcp14">MUST</span> respond with a 4.00 (Bad Request) error if any received parameter is specified multiple times, invalid or not recognized.<a href="#section-2.4.3-4" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-5">A CoAP endpoint creating a topic may specify a 'topic_data' URI different than that used by the broker. The broker may then simply forward the observation requests to the 'topic_data' URI.<a href="#section-2.4.3-5" class="pilcrow">¶</a></p>
+<p id="section-2.4.3-6">If the 'topic_data' is empty the broker will assign a resource for a publisher to publish to.<a href="#section-2.4.3-6" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.4.3-7">
 <pre>
 =&gt; 0.02 POST
-   Uri-Path: pubsub
-   Uri-Path: topics
+   Uri-Path: ps
+   Uri-Path: tc
    Content-Format: TBD2 (application/core-pubsub+cbor)
-   TBD (this should be a CBOR map)
+   TBD (this should be a CBOR map with the mandatory parameters)
    {
-     "topic_name" : sensor23
+     "topic_name" : "living_room_sensor"
+     "resource_type" : "core.ps.conf"
    }
 
 &lt;= 2.01 Created
-   Location-Path: pubsub
-   Location-Path: sensor23
+   Location-Path: ps/h9392
    Content-Format: TBD2 (application/core-pubsub+cbor)
 
    TBD (this should be a CBOR map)
    {
-     "topic_name" : "sensor23",
-     "topic_data_uri" : "coap://mybroker/td/sensor23"
+     "topic_name" : "living_room_sensor",
+     "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392"
+     "resource_type" : "core.ps.conf"
    }
 </pre><a href="#section-2.4.3-7" class="pilcrow">¶</a>
 </div>
@@ -1722,18 +1720,22 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <div class="alignLeft art-text artwork" id="section-2.5.1-6">
 <pre>
 =&gt; 0.01 GET
-   Uri-Path: pubsub
-   Uri-Path: topics
-   Uri-Path: 1234
+   Uri-Path: ps
+   Uri-Path: tc
+   Uri-Path: h9392
 
 &lt;= 2.05 Content
    Content-Format: TBD2 (application/core-pubsub+cbor)
-   TBD (this should be a CBOR map)
    {
-     "topic_name" : "1234",
-     foo
-     bar
+      "topic_name" : "living_room_sensor",
+      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+      "resource_type": "core.ps.conf",
+      "media_type": "application/senml-cbor",
+      "target_attribute": "temperature",
+      "expiration_date": "",
+      "max_subscribers": -1
    }
+
 </pre><a href="#section-2.5.1-6" class="pilcrow">¶</a>
 </div>
 </section>
@@ -1753,22 +1755,19 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <div class="alignLeft art-text artwork" id="section-2.5.2-8">
 <pre>
 =&gt; 0.05 FETCH
-   Uri-Path: pubsub
-   Uri-Path: topics
-   Uri-Path: 1234
+   Uri-Path: ps
+   Uri-Path: tc
+   Uri-Path: h9392
    Content-Format: TBD2 (application/core-pubsub+cbor)
-   TBD (this should be a CBOR map)
    {
-     "conf_filter" : [foo,
-                      bar",]
+     "conf_filter" : [topic_data, media_type]
    }
 
 &lt;= 2.05 Content
    Content-Format: TBD2 (application/core-pubsub+cbor)
-   TBD (this should be a CBOR map)
    {
-     "foo" : 10,
-     "bar" : 5
+     "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+     "media_type": "application/senml-cbor"
    }
 
 </pre><a href="#section-2.5.2-8" class="pilcrow">¶</a>
@@ -1781,20 +1780,22 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <a href="#section-2.5.3" class="section-number selfRef">2.5.3. </a><a href="#name-updating-the-topic-resource" class="section-name selfRef">Updating the Topic Resource</a>
           </h4>
 <p id="section-2.5.3-1">A client can update the configuration of a topic by submitting the representation of the updated topic  (see Section 3.1.3) in a PUT or POST request to the topic URI. Any existing properties in the configuration are overwritten by this update.<a href="#section-2.5.3-1" class="pilcrow">¶</a></p>
-<p id="section-2.5.3-2">On success, the server returns a 2.04 (Updated) response.<a href="#section-2.5.3-2" class="pilcrow">¶</a></p>
+<p id="section-2.5.3-2">On success, the server returns a 2.04 (Changed) response and the current full resource representation. The broker may chose not to overwrite parameters that are not explicitly modified in the request.<a href="#section-2.5.3-2" class="pilcrow">¶</a></p>
 <p id="section-2.5.3-3">Example:<a href="#section-2.5.3-3" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.5.3-4">
 <pre>
 =&gt; 0.03 PUT
-   Uri-Path: pubsub
-   Uri-Path: topics
-   Uri-Path: 1234
+   Uri-Path: ps
+   Uri-Path: tc
+   Uri-Path: h9392
    Content-Format: TBD2 (application/core-pubsub+cbor)
 
-   TBD (this should be a CBOR map)
    {
-     "foo" : 11,
-     "bar" : 5
+      "topic_name" : "living_room_sensor",
+      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+      "target_attribute": "temperature",
+      "expiration_date": "2023-04-28T23:59:59Z",
+      "max_subscribers": 2
    }
 
 &lt;= 2.04 Changed
@@ -1802,10 +1803,14 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 
    TBD (this should be a CBOR map)
    {
-     "foo" : 11,
-     "bar" : 5
+      "topic_name" : "living_room_sensor",
+      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+      "resource_type": "core.ps.conf",
+      "media_type": "application/senml-cbor",
+      "target_attribute": "temperature",
+      "expiration_date": "2023-04-28T23:59:59Z",
+      "max_subscribers": 2
    }
-
 </pre><a href="#section-2.5.3-4" class="pilcrow">¶</a>
 </div>
 </section>
@@ -2056,7 +2061,7 @@ Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
 | Name            | CBOR Key  | CBOR Type    | Reference  |
 |-----------------|-----------|--------------|------------|
 | topic_name      | TBD1      | tstr         | [RFC-XXXX] |
-| topic_data_uri  | TBD2      | tstr         | [RFC-XXXX] |
+| topic_data      | TBD2      | tstr         | [RFC-XXXX] |
 | resource_type   | TBD3      | tstr         | [RFC-XXXX] |
 | media_type      | TBD4      | tstr (opt)   | [RFC-XXXX] |
 | target_attribute| TBD5      | tstr (opt)   | [RFC-XXXX] |
@@ -2109,7 +2114,7 @@ established with <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>
 <a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-resource-type-value-corepsc" class="section-name selfRef">Resource Type value 'core.ps.coll'</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="section-6.2-1.1">Attribute Value: core.ps<a href="#section-6.2-1.1" class="pilcrow">¶</a>
+<li class="normal" id="section-6.2-1.1">Attribute Value: core.ps.coll<a href="#section-6.2-1.1" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-6.2-1.2">Description: XXX of This document<a href="#section-6.2-1.2" class="pilcrow">¶</a>
 </li>
@@ -2126,7 +2131,7 @@ established with <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>
 <a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-resource-type-value-corepsco" class="section-name selfRef">Resource Type value 'core.ps.conf'</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="section-6.3-1.1">Attribute Value: core.ps<a href="#section-6.3-1.1" class="pilcrow">¶</a>
+<li class="normal" id="section-6.3-1.1">Attribute Value: core.ps.conf<a href="#section-6.3-1.1" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-6.3-1.2">Description: XXX of This document<a href="#section-6.3-1.2" class="pilcrow">¶</a>
 </li>
@@ -2143,7 +2148,7 @@ established with <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>
 <a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-resource-type-value-corepsd" class="section-name selfRef">Resource Type value 'core.ps.data'</a>
         </h3>
 <ul class="normal">
-<li class="normal" id="section-6.4-1.1">Attribute Value: core.ps<a href="#section-6.4-1.1" class="pilcrow">¶</a>
+<li class="normal" id="section-6.4-1.1">Attribute Value: core.ps.data<a href="#section-6.4-1.1" class="pilcrow">¶</a>
 </li>
           <li class="normal" id="section-6.4-1.2">Description: XXX of This document<a href="#section-6.4-1.2" class="pilcrow">¶</a>
 </li>
@@ -2223,11 +2228,7 @@ established with <span>[<a href="#RFC6690" class="cite xref">RFC6690</a>]</span>
 <dd class="break"></dd>
 <dt id="I-D.ietf-ace-oscore-gm-admin">[I-D.ietf-ace-oscore-gm-admin]</dt>
         <dd>
-<span class="refAuthor">Tiloca, M.</span>, <span class="refAuthor">Höglund, R.</span>, <span class="refAuthor">Van der Stok, P.</span>, and <span class="refAuthor">F. Palombini</span>, <span class="refTitle">"Admin Interface for the OSCORE Group Manager"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-ace-oscore-gm-admin-07</span>, <time datetime="2022-10-24" class="refDate">24 October 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-ace-oscore-gm-admin-07">https://datatracker.ietf.org/doc/html/draft-ietf-ace-oscore-gm-admin-07</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="I-D.ietf-core-coral">[I-D.ietf-core-coral]</dt>
-        <dd>
-<span class="refAuthor">Amsüss, C.</span> and <span class="refAuthor">T. Fossati</span>, <span class="refTitle">"The Constrained RESTful Application Language (CoRAL)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-core-coral-05</span>, <time datetime="2022-03-07" class="refDate">7 March 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-core-coral-05">https://datatracker.ietf.org/doc/html/draft-ietf-core-coral-05</a>&gt;</span>. </dd>
+<span class="refAuthor">Tiloca, M.</span>, <span class="refAuthor">Höglund, R.</span>, <span class="refAuthor">Van der Stok, P.</span>, and <span class="refAuthor">F. Palombini</span>, <span class="refTitle">"Admin Interface for the OSCORE Group Manager"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-ace-oscore-gm-admin-08</span>, <time datetime="2023-03-13" class="refDate">13 March 2023</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-ace-oscore-gm-admin-08">https://datatracker.ietf.org/doc/html/draft-ietf-ace-oscore-gm-admin-08</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC5988">[RFC5988]</dt>
       <dd>

@@ -341,7 +341,7 @@ Table of Contents
 
    *  'media_type': An optional field used to indicate the media type of
       the topic data resource.  It encodes the media type as a CBOR text
-      string.  Example media types include "application/json".
+      string (e.g.,"application/json").
 
    *  'target_attribute': An optional field used to indicate the
       attribute or property of the topic_data resource.  It encodes the
@@ -424,7 +424,7 @@ Table of Contents
 
 
    <= 2.05 Content
-       </ps/>;rt=core.ps;ct=40
+       </ps>;rt=core.ps;ct=40
 
 2.3.2.  Topic Discovery
 
@@ -444,10 +444,10 @@ Table of Contents
    "core.ps.conf".
 
    Within each topic resource there is a set of configuration properties
-   (see Section Section 2.2.1).  The 'topic_data_uri' property contains
-   the URI of the topic data resource that a CoAP client can subscribe
-   to.  Resources exposing resources of the topic data type are expected
-   to use the resource type 'core.ps.data'.
+   (see Section Section 2.2.1).  The 'topic_data' property contains the
+   URI of the topic data resource that a CoAP client can subscribe to.
+   Resources exposing resources of the topic data type are expected to
+   use the resource type 'core.ps.data'.
 
 2.4.  Topic Collection Interactions
 
@@ -469,14 +469,13 @@ Table of Contents
    Example:
 
    => 0.01 GET
-      Uri-Path: pubsub
-      Uri-Path: topics
+      Uri-Path: ps
+      Uri-Path: tc
 
    <= 2.05 Content
       Content-Format: 40 (application/link-format)
-      <coap://base-url/ps/tc/a>rt="core.ps.conf",
-      <coap://base-url/ps/tc/b>rt="core.ps.conf",
-      <coap://base-url/ps/tc/c>rt="core.ps.conf"
+      </ps/tc/temperature>;rt="core.ps.conf",
+      </ps/tc/humidity>;rt="core.ps.conf"
 
 2.4.2.  Getting Topics by Properties
 
@@ -486,22 +485,25 @@ Table of Contents
 
    On success, the server returns a 2.05 (Content) response with a
    representation of a list of topics in the collection (see
-   Section Section 2.3.2) that match the filter.
+   Section Section 2.3.2) that match the filter in CoRE link format
+   [RFC6690].
 
    Example:
 
    => 0.05 FETCH
-      Uri-Path: pubsub
-      Uri-Path: topics
+      Uri-Path: ps
+      Uri-Path: tc
       Content-Format: TBD (application/pubsub+cbor)
 
       {
-          "topic_name" : a
+        "resource_type" : "core.ps.conf",
+        "target_attribute" : "temperature"
       }
 
    <= 2.05 Content
       Content-Format: 40 (application/link-format)
-      <coap://base-url/ps/tc/a>rt="core.ps.conf"
+      </living_room_sensor>;anchor="coap://[2001:db8::2]/ps/tc/h9392",
+      </kitchen_sensor>;anchor="coap://[2001:db8::2]/ps/tc/f3192"
 
 2.4.3.  Creating a Topic
 
@@ -509,46 +511,46 @@ Table of Contents
    a representation of the initial topic resource (see
    Section Section 2.2.2) in a POST request to the topic collection URI.
 
-   The topic specification sent in the payload should use a supported
-   serialization of the CoRE link format [RFC6690] but other
-   serializations like [I-D.ietf-core-coral] may be used in the future.
-
    On success, the server returns a 2.01 (Created) response indicating
-   the topic URI of the new topic.
+   the topic URI of the new topic and the current representation of the
+   topic resource.
 
-   If a topic manager (TBD) is present in the broker, the topic creation
-   may require manager approval subject to certain conditions (TBD).  If
-   the conditions are not fulfilled, the manager MUST respond with a
-   4.03 (Forbidden) error.  The response MUST have Content-Format set to
+   If a topic manager is present in the broker, the topic creation may
+   require manager approval subject to certain conditions.  If the
+   conditions are not fulfilled, the manager MUST respond with a 4.03
+   (Forbidden) error.  The response MUST have Content-Format set to
    "application/core-pubsub+cbor".
 
-   The broker MUST respond with a 4.00 (Bad Request) error in the
-   following scenarios:
+   The broker MUST respond with a 4.00 (Bad Request) error if any
+   received parameter is specified multiple times, invalid or not
+   recognized.
 
-   *  If any received parameter is specified multiple times, invalid or
-      not recognized (malformed).
+   A CoAP endpoint creating a topic may specify a 'topic_data' URI
+   different than that used by the broker.  The broker may then simply
+   forward the observation requests to the 'topic_data' URI.
 
-   *  If the Authorization Server with URI specified in the 'as_uri'
-      parameter is not trusted and there is no alternative AS.
+   If the 'topic_data' is empty the broker will assign a resource for a
+   publisher to publish to.
 
    => 0.02 POST
-      Uri-Path: pubsub
-      Uri-Path: topics
+      Uri-Path: ps
+      Uri-Path: tc
       Content-Format: TBD2 (application/core-pubsub+cbor)
-      TBD (this should be a CBOR map)
+      TBD (this should be a CBOR map with the mandatory parameters)
       {
-        "topic_name" : sensor23
+        "topic_name" : "living_room_sensor"
+        "resource_type" : "core.ps.conf"
       }
 
    <= 2.01 Created
-      Location-Path: pubsub
-      Location-Path: sensor23
+      Location-Path: ps/h9392
       Content-Format: TBD2 (application/core-pubsub+cbor)
 
       TBD (this should be a CBOR map)
       {
-        "topic_name" : "sensor23",
-        "topic_data_uri" : "coap://mybroker/td/sensor23"
+        "topic_name" : "living_room_sensor",
+        "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392"
+        "resource_type" : "core.ps.conf"
       }
 
 2.5.  Topic Resource Interactions
@@ -579,17 +581,20 @@ Table of Contents
    Example:
 
    => 0.01 GET
-      Uri-Path: pubsub
-      Uri-Path: topics
-      Uri-Path: 1234
+      Uri-Path: ps
+      Uri-Path: tc
+      Uri-Path: h9392
 
    <= 2.05 Content
       Content-Format: TBD2 (application/core-pubsub+cbor)
-      TBD (this should be a CBOR map)
       {
-        "topic_name" : "1234",
-        foo
-        bar
+         "topic_name" : "living_room_sensor",
+         "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+         "resource_type": "core.ps.conf",
+         "media_type": "application/senml-cbor",
+         "target_attribute": "temperature",
+         "expiration_date": "",
+         "max_subscribers": -1
       }
 
 2.5.2.  Getting part of a topic resource by filter
@@ -624,22 +629,19 @@ Table of Contents
    Example:
 
    => 0.05 FETCH
-      Uri-Path: pubsub
-      Uri-Path: topics
-      Uri-Path: 1234
+      Uri-Path: ps
+      Uri-Path: tc
+      Uri-Path: h9392
       Content-Format: TBD2 (application/core-pubsub+cbor)
-      TBD (this should be a CBOR map)
       {
-        "conf_filter" : [foo,
-                         bar",]
+        "conf_filter" : [topic_data, media_type]
       }
 
    <= 2.05 Content
       Content-Format: TBD2 (application/core-pubsub+cbor)
-      TBD (this should be a CBOR map)
       {
-        "foo" : 10,
-        "bar" : 5
+        "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+        "media_type": "application/senml-cbor"
       }
 
 2.5.3.  Updating the Topic Resource
@@ -649,20 +651,24 @@ Table of Contents
    POST request to the topic URI.  Any existing properties in the
    configuration are overwritten by this update.
 
-   On success, the server returns a 2.04 (Updated) response.
+   On success, the server returns a 2.04 (Changed) response and the
+   current full resource representation.  The broker may chose not to
+   overwrite parameters that are not explicitly modified in the request.
 
    Example:
 
    => 0.03 PUT
-      Uri-Path: pubsub
-      Uri-Path: topics
-      Uri-Path: 1234
+      Uri-Path: ps
+      Uri-Path: tc
+      Uri-Path: h9392
       Content-Format: TBD2 (application/core-pubsub+cbor)
 
-      TBD (this should be a CBOR map)
       {
-        "foo" : 11,
-        "bar" : 5
+         "topic_name" : "living_room_sensor",
+         "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+         "target_attribute": "temperature",
+         "expiration_date": "2023-04-28T23:59:59Z",
+         "max_subscribers": 2
       }
 
    <= 2.04 Changed
@@ -670,8 +676,13 @@ Table of Contents
 
       TBD (this should be a CBOR map)
       {
-        "foo" : 11,
-        "bar" : 5
+         "topic_name" : "living_room_sensor",
+         "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+         "resource_type": "core.ps.conf",
+         "media_type": "application/senml-cbor",
+         "target_attribute": "temperature",
+         "expiration_date": "2023-04-28T23:59:59Z",
+         "max_subscribers": 2
       }
 
 2.5.4.  Deleting a Topic Resource
@@ -945,7 +956,7 @@ Table of Contents
         | Name            | CBOR Key  | CBOR Type    | Reference  |
         |-----------------|-----------|--------------|------------|
         | topic_name      | TBD1      | tstr         | [RFC-XXXX] |
-        | topic_data_uri  | TBD2      | tstr         | [RFC-XXXX] |
+        | topic_data      | TBD2      | tstr         | [RFC-XXXX] |
         | resource_type   | TBD3      | tstr         | [RFC-XXXX] |
         | media_type      | TBD4      | tstr (opt)   | [RFC-XXXX] |
         | target_attribute| TBD5      | tstr (opt)   | [RFC-XXXX] |
@@ -977,7 +988,7 @@ Table of Contents
 
 6.2.  Resource Type value 'core.ps.coll'
 
-   *  Attribute Value: core.ps
+   *  Attribute Value: core.ps.coll
 
    *  Description: XXX of This document
 
@@ -987,7 +998,7 @@ Table of Contents
 
 6.3.  Resource Type value 'core.ps.conf'
 
-   *  Attribute Value: core.ps
+   *  Attribute Value: core.ps.conf
 
    *  Description: XXX of This document
 
@@ -997,7 +1008,7 @@ Table of Contents
 
 6.4.  Resource Type value 'core.ps.data'
 
-   *  Attribute Value: core.ps
+   *  Attribute Value: core.ps.data
 
    *  Description: XXX of This document
 
@@ -1080,16 +1091,9 @@ Table of Contents
               Tiloca, M., Höglund, R., Van der Stok, P., and F.
               Palombini, "Admin Interface for the OSCORE Group Manager",
               Work in Progress, Internet-Draft, draft-ietf-ace-oscore-
-              gm-admin-07, 24 October 2022,
+              gm-admin-08, 13 March 2023,
               <https://datatracker.ietf.org/doc/html/draft-ietf-ace-
-              oscore-gm-admin-07>.
-
-   [I-D.ietf-core-coral]
-              Amsüss, C. and T. Fossati, "The Constrained RESTful
-              Application Language (CoRAL)", Work in Progress, Internet-
-              Draft, draft-ietf-core-coral-05, 7 March 2022,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-core-
-              coral-05>.
+              oscore-gm-admin-08>.
 
    [RFC5988]  Nottingham, M., "Web Linking", RFC 5988,
               DOI 10.17487/RFC5988, October 2010,
