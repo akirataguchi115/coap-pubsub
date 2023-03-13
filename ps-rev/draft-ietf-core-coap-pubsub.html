@@ -1902,38 +1902,49 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
           <h4 id="name-publish">
 <a href="#section-2.7.1" class="section-number selfRef">2.7.1. </a><a href="#name-publish" class="section-name selfRef">Publish</a>
           </h4>
-<p id="section-2.7.1-1">A topic must have been created in order to publish data to it (See Section <a href="#topic-create" class="auto internal xref">Section 2.4.3</a>) and be in the fully created state in order to the publish operation to work.<a href="#section-2.7.1-1" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-2">A client can publish data to a topic by submitting the data in a PUT request to the topic data URI. The topic data URI is indicated by the property of type <a href="http://coreapps.org/pubsub#data">http://coreapps.org/pubsub#data</a> in the topic resource. Please note that the topic data URI is not the same as the topic URI.<a href="#section-2.7.1-2" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-3">The data <span class="bcp14">MUST</span> be in the content format specified by the configuration
-property <a href="http://coreapps.org/pubsub#accept">http://coreapps.org/pubsub#accept</a> in the topic resource. Brokers <span class="bcp14">MUST</span> reject publish operations which do not use the specified content format.<a href="#section-2.7.1-3" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-4">On success, the server returns a 2.04 (Updated) response.  However, when data is published to the topic for the first time, the server may instead return a 2.01 (Created) response.<a href="#section-2.7.1-4" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-5">If the request does not have an acceptable content format, the server returns a 4.15 (Unsupported Content Format) response.<a href="#section-2.7.1-5" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-6">If the client is sending publications too fast, the server returns a
-4.29 (Too Many Requests) response <span>[<a href="#RFC8516" class="cite xref">RFC8516</a>]</span>.<a href="#section-2.7.1-6" class="pilcrow">¶</a></p>
-<p id="section-2.7.1-7">Example:<a href="#section-2.7.1-7" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2.7.1-8">
+<p id="section-2.7.1-1">A topic must have been created in order to publish data to it (See Section <a href="#topic-create" class="auto internal xref">Section 2.4.3</a>) and be in the half-created state in order to the publish operation to work (see <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>).<a href="#section-2.7.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.1-2">A client can publish data to a topic by submitting the data in a PUT request to the 'topic_data' URI as indicated in its topic resource property. Please note that the 'topic_data' URI is not the same as the topic URI used for configuring the topic (see <a href="#topic-resource-representation" class="auto internal xref">Section 2.2.2</a>).<a href="#section-2.7.1-2" class="pilcrow">¶</a></p>
+<p id="section-2.7.1-3">On success, the server returns a 2.04 (Updated) response. However, when data is published to the topic for the first time, the server instead <span class="bcp14">MUST</span> return a 2.01 (Created) response and set the topic in the fully-created state (see <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>).<a href="#section-2.7.1-3" class="pilcrow">¶</a></p>
+<p id="section-2.7.1-4">If the request does not have an acceptable content format, the server returns a 4.15 (Unsupported Content Format) response.<a href="#section-2.7.1-4" class="pilcrow">¶</a></p>
+<p id="section-2.7.1-5">If the client is sending publications too fast, the server returns a
+4.29 (Too Many Requests) response <span>[<a href="#RFC8516" class="cite xref">RFC8516</a>]</span>.<a href="#section-2.7.1-5" class="pilcrow">¶</a></p>
+<p id="section-2.7.1-6">Example of first publication:<a href="#section-2.7.1-6" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.7.1-7">
 <pre>
 =&gt; 0.03 PUT
    Uri-Path: ps
    Uri-Path: data
    Uri-Path: 6578616d706c65
-   Content-Format: 112
+   Content-Format: 110
 
-   [...SenML data...]
+   {
+      "n": "temperature",
+      "u": "Cel",
+      "t": 1621452122,
+      "v": 23.5
+   }
 
 &lt;= 2.01 Created
-
-
+</pre><a href="#section-2.7.1-7" class="pilcrow">¶</a>
+</div>
+<p id="section-2.7.1-8">Example of subsequent publication:<a href="#section-2.7.1-8" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.7.1-9">
+<pre>
 =&gt; 0.03 PUT
-   Uri-Path: pubsub
+   Uri-Path: ps
    Uri-Path: data
    Uri-Path: 6578616d706c65
-   Content-Format: 112
+   Content-Format: 110
 
-   [...updated SenML data...]
+   {
+      "n": "temperature",
+      "u": "Cel",
+      "t": 182734122,
+      "v": 22.5
+   }
 
 &lt;= 2.04 Updated
-</pre><a href="#section-2.7.1-8" class="pilcrow">¶</a>
+</pre><a href="#section-2.7.1-9" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -1942,53 +1953,54 @@ property <a href="http://coreapps.org/pubsub#accept">http://coreapps.org/pubsub#
           <h4 id="name-subscribe">
 <a href="#section-2.7.2" class="section-number selfRef">2.7.2. </a><a href="#name-subscribe" class="section-name selfRef">Subscribe</a>
           </h4>
-<p id="section-2.7.2-1">A client can get the latest published data and subscribe to newly published data by observing the topic data URI with a GET request that includes the Observe option set to 0 <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>.<a href="#section-2.7.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.2-1">A client can subscribe to a topic by sending a CoAP GET request with the Observe set to '0' to subscribe to resource updates. <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>.<a href="#section-2.7.2-1" class="pilcrow">¶</a></p>
 <p id="section-2.7.2-2">On success, the broker <span class="bcp14">MUST</span> return 2.05 (Content) notifications with the data.<a href="#section-2.7.2-2" class="pilcrow">¶</a></p>
 <p id="section-2.7.2-3">If the topic is not yet in the fully created state (see <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>) the broker <span class="bcp14">SHOULD</span> return a response code 4.04 (Not Found).<a href="#section-2.7.2-3" class="pilcrow">¶</a></p>
 <p id="section-2.7.2-4">The following response codes are defined for the Subscribe operation:<a href="#section-2.7.2-4" class="pilcrow">¶</a></p>
 <span class="break"></span><dl class="dlParallel" id="section-2.7.2-5">
             <dt id="section-2.7.2-5.1">Success:</dt>
             <dd style="margin-left: 1.5em" id="section-2.7.2-5.2">
-              <p id="section-2.7.2-5.2.1">2.05 "Content". Successful subscribe, current value included
-Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
+              <p id="section-2.7.2-5.2.1">2.05 "Content". Successful subscribe with observe response, current value included in the response.<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
 </dd>
             <dd class="break"></dd>
-<dt id="section-2.7.2-5.3"></dt>
+<dt id="section-2.7.2-5.3">Failure:</dt>
             <dd style="margin-left: 1.5em" id="section-2.7.2-5.4">
               <p id="section-2.7.2-5.4.1">4.04 "Not Found". Topic does not exist.<a href="#section-2.7.2-5.4.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 </dl>
-<p id="section-2.7.2-6">Example:<a href="#section-2.7.2-6" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2.7.2-7">
+<p id="section-2.7.2-6">TBD: Do we want to treat max_clients as an error?<a href="#section-2.7.2-6" class="pilcrow">¶</a></p>
+<p id="section-2.7.2-7">If the 'max_clients' parameter has been reached, the server must treat that as specified in section 4.1 of <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>. The response <span class="bcp14">MUST NOT</span> include an Observe Option, the absence of which signals to the subscriber that the subscription failed.<a href="#section-2.7.2-7" class="pilcrow">¶</a></p>
+<p id="section-2.7.2-8">Example:<a href="#section-2.7.2-8" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.7.2-9">
 <pre>
 =&gt; 0.01 GET
-   Uri-Path: pubsub
+   Uri-Path: ps
    Uri-Path: data
    Uri-Path: 6578616d706c65
    Observe: 0
 
 &lt;= 2.05 Content
-   Content-Format: 112
+   Content-Format: 110
    Observe: 10001
    Max-Age: 15
 
    [...SenML data...]
 
 &lt;= 2.05 Content
-   Content-Format: 112
+   Content-Format: 110
    Observe: 10002
    Max-Age: 15
 
    [...SenML data...]
 
 &lt;= 2.05 Content
-   Content-Format: 112
+   Content-Format: 110
    Observe: 10003
    Max-Age: 15
 
    [...SenML data...]
-</pre><a href="#section-2.7.2-7" class="pilcrow">¶</a>
+</pre><a href="#section-2.7.2-9" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -1997,7 +2009,7 @@ Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
           <h4 id="name-unsubscribe">
 <a href="#section-2.7.3" class="section-number selfRef">2.7.3. </a><a href="#name-unsubscribe" class="section-name selfRef">Unsubscribe</a>
           </h4>
-<p id="section-2.7.3-1">A client can unsubscribe simply by cancelling the observation as described in Section 3.6 of <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>. The client <span class="bcp14">MUST</span> either use CoAP GET with the Observe Option set to 1 or send a CoAP Reset message in response to a notification.<a href="#section-2.7.3-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.3-1">A CoAP client can unsubscribe simply by cancelling the observation as described in Section 3.6 of <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>. The client <span class="bcp14">MUST</span> either use CoAP GET with the Observe Option set to 1 or send a CoAP Reset message in response to a notification.<a href="#section-2.7.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="delete-topic-data">
@@ -2005,7 +2017,20 @@ Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
           <h4 id="name-delete-topic-data">
 <a href="#section-2.7.4" class="section-number selfRef">2.7.4. </a><a href="#name-delete-topic-data" class="section-name selfRef">Delete topic data</a>
           </h4>
-<p id="section-2.7.4-1">A client can unsubscribe simply by cancelling the observation as described in Section 3.6 of <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span>. The client <span class="bcp14">MUST</span> either use CoAP GET with the Observe Option set to 1 or send a CoAP Reset message in response to a notification.<a href="#section-2.7.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.4-1">A publisher <span class="bcp14">MAY</span> delete a topic by making a CoAP DELETE request on the 'topic_data' URI.<a href="#section-2.7.4-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.4-2">On success, the server returns a 2.02 (Deleted) response.<a href="#section-2.7.4-2" class="pilcrow">¶</a></p>
+<p id="section-2.7.4-3">When a topic_data resource is deleted, the broker <span class="bcp14">SHOULD</span> also delete the 'topic_data' parameter in the topic resopurce, unsubscribe all subscribers by removing them from the list of observers and return a final 4.04 (Not Found) response as per <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span> Section 3.2. The topic is then set back to the half created state as per <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>.<a href="#section-2.7.4-3" class="pilcrow">¶</a></p>
+<p id="section-2.7.4-4">Example:<a href="#section-2.7.4-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.7.4-5">
+<pre>
+=&gt; 0.04 DELETE
+   Uri-Path: ps
+   Uri-Path: data
+   Uri-Path: 6578616d706c65
+
+&lt;= 2.02 Deleted
+</pre><a href="#section-2.7.4-5" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="read-data">
@@ -2013,7 +2038,7 @@ Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
           <h4 id="name-read-latest-data">
 <a href="#section-2.7.5" class="section-number selfRef">2.7.5. </a><a href="#name-read-latest-data" class="section-name selfRef">Read Latest Data</a>
           </h4>
-<p id="section-2.7.5-1">A client can get the latest published topic data by making a GET request to the topic data URI in the broker.<a href="#section-2.7.5-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.5-1">A client can get the latest published topic data by making a GET request to the 'topic_data' URI in the broker. Please note that discovery of such URI is a required step (see <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)<a href="#section-2.7.5-1" class="pilcrow">¶</a></p>
 <p id="section-2.7.5-2">On success, the server <span class="bcp14">MUST</span> return 2.05 (Content) response with the data.<a href="#section-2.7.5-2" class="pilcrow">¶</a></p>
 <p id="section-2.7.5-3">If the target URI does not match an existing resource or the topic is not in the fully created state (see <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>), the broker <span class="bcp14">SHOULD</span> return a response code 4.04 (Not Found).<a href="#section-2.7.5-3" class="pilcrow">¶</a></p>
 <p id="section-2.7.5-4">If the Broker can not return the requested content format it <span class="bcp14">MUST</span> return a response code 4.15 (Unsupported Content Format).<a href="#section-2.7.5-4" class="pilcrow">¶</a></p>
@@ -2021,16 +2046,20 @@ Failure:<a href="#section-2.7.2-5.2.1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.7.5-6">
 <pre>
 =&gt; 0.01 GET
-   Uri-Path: pubsub
+   Uri-Path: ps
    Uri-Path: data
    Uri-Path: 6578616d706c65
 
-
 &lt;= 2.05 Content
-   Content-Format: 112
+   Content-Format: 110
    Max-Age: 15
 
-   [...SenML data...]
+   {
+      "n": "temperature",
+      "u": "Cel",
+      "t": 1621452122,
+      "v": 23.5
+   }
 </pre><a href="#section-2.7.5-6" class="pilcrow">¶</a>
 </div>
 </section>
