@@ -98,18 +98,17 @@ Table of Contents
        2.7.3.  Unsubscribe
        2.7.4.  Delete topic data resource
        2.7.5.  Read latest data
-   3.  URI Templates
-   4.  CoAP Pubsub Parameters
-   5.  Security Considerations
-   6.  IANA Considerations
-     6.1.  Resource Type value 'core.ps'
-     6.2.  Resource Type value 'core.ps.coll'
-     6.3.  Resource Type value 'core.ps.conf'
-     6.4.  Resource Type value 'core.ps.data'
-   7.  Acknowledgements
-   8.  References
-     8.1.  Normative References
-     8.2.  Informative References
+   3.  CoAP Pubsub Parameters
+   4.  Security Considerations
+   5.  IANA Considerations
+     5.1.  Resource Type value 'core.ps'
+     5.2.  Resource Type value 'core.ps.coll'
+     5.3.  Resource Type value 'core.ps.conf'
+     5.4.  Resource Type value 'core.ps.data'
+   6.  Acknowledgements
+   7.  References
+     7.1.  Normative References
+     7.2.  Informative References
    Authors' Addresses
 
 1.  Introduction
@@ -254,8 +253,8 @@ Table of Contents
 
                      ___
            Topic    /   \
-        Collection  \___/
-                         \
+         Collection \___/
+          Resource       \
                           \____________________
                            \___    \___        \___
                            /   \   /   \  ...  /   \        Topic
@@ -264,7 +263,7 @@ Table of Contents
                       Figure 2: Resources of a Broker
 
    The Broker exports a topic-collection resource, with resource type
-   "core.ps.coll" defined in Section 6 of this document.  The interfaces
+   "core.ps.coll" defined in Section 5 of this document.  The interfaces
    for the topic-collection resource is defined in Section 2.4.
 
 2.  Pub-Sub Topics
@@ -276,10 +275,10 @@ Table of Contents
    by a client creating or administering a topic.  The topic data
    resource is used by the publishers and the subscribers to a topic.
 
-                        ___
-                Topic  /   \
-           Collection  \___/
-                           \
+                       ___
+             Topic    /   \
+           Collection \___/
+            Resource       \
                             \___________________________
                              \          \               \
                               \ ......   \ ......        \ ......
@@ -324,7 +323,7 @@ Table of Contents
 2.2.1.  Topic Properties
 
    The CBOR map includes the following configuration parameters, whose
-   CBOR abbreviations are defined in Section 4 of this document.
+   CBOR abbreviations are defined in Section 3 of this document.
 
    *  'topic_name': A required field used as an application identifier.
       It encodes the topic name as a CBOR text string.  Examples of
@@ -368,7 +367,7 @@ Table of Contents
    properties of the topic as top-level elements.
 
    Unless specified otherwise, these are defined in this document and
-   their CBOR abbreviations are defined in Section 4.
+   their CBOR abbreviations are defined in Section 3.
 
 2.2.2.1.  Default Values
 
@@ -408,7 +407,7 @@ Table of Contents
    multicast, through a Resource Directory (RD) [RFC9167] or by other
    means specified in extensions to [RFC7252].  Brokers MAY register
    with a RD by following the steps on Section 5 of [RFC9167] with the
-   resource type set to "core.ps" as defined in Section 6 of this
+   resource type set to "core.ps" as defined in Section 5 of this
    document.
 
    Brokers SHOULD expose a link to the entry point of the pubsub API at
@@ -576,7 +575,7 @@ Table of Contents
 
    The response payload is a CBOR map, whose possible entries are
    specified in Section 2.2.2 and use the same abbreviations defined in
-   Section 4.
+   Section 3.
 
    Example:
 
@@ -621,7 +620,7 @@ Table of Contents
 
    The response payload is a CBOR map, whose possible entries are
    specified in Section 2.2.2 and use the same abbreviations defined in
-   Section 4.
+   Section 3.
 
    Both request and response MUST have Content-Format set to
    "application/core-pubsub+cbor".
@@ -970,9 +969,7 @@ Table of Contents
          "v": 23.5
       }
 
-3.  URI Templates
-
-4.  CoAP Pubsub Parameters
+3.  CoAP Pubsub Parameters
 
    This document defines parameters used in the messages exchanged
    between a client and the broker during the topic creation and
@@ -998,17 +995,19 @@ Table of Contents
 
                       Figure 5: CoAP Pubsub Parameters
 
-5.  Security Considerations
+4.  Security Considerations
 
    TBD.
 
-6.  IANA Considerations
+5.  IANA Considerations
+
+   TBD.
 
    This document registers one attribute value in the Resource Type
    (rt=) registry established with [RFC6690] and appends to the
    definition of one CoAP Response Code in the CoRE Parameters Registry.
 
-6.1.  Resource Type value 'core.ps'
+5.1.  Resource Type value 'core.ps'
 
    *  Attribute Value: core.ps
 
@@ -1018,7 +1017,7 @@ Table of Contents
 
    *  Notes: None
 
-6.2.  Resource Type value 'core.ps.coll'
+5.2.  Resource Type value 'core.ps.coll'
 
    *  Attribute Value: core.ps.coll
 
@@ -1028,7 +1027,7 @@ Table of Contents
 
    *  Notes: None
 
-6.3.  Resource Type value 'core.ps.conf'
+5.3.  Resource Type value 'core.ps.conf'
 
    *  Attribute Value: core.ps.conf
 
@@ -1038,7 +1037,7 @@ Table of Contents
 
    *  Notes: None
 
-6.4.  Resource Type value 'core.ps.data'
+5.4.  Resource Type value 'core.ps.data'
 
    *  Attribute Value: core.ps.data
 
@@ -1048,7 +1047,7 @@ Table of Contents
 
    *  Notes: None
 
-7.  Acknowledgements
+6.  Acknowledgements
 
    The current version of this document contains a substantial
    contribution by Klaus Hartke's proposal
@@ -1062,9 +1061,9 @@ Table of Contents
    Kellogg, Anders Eriksson, Goran Selander, Mikko Majanen, and Olaf
    Bergmann for their valuable contributions and reviews.
 
-8.  References
+7.  References
 
-8.1.  Normative References
+7.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -1109,7 +1108,7 @@ Table of Contents
               Protocol (EPP)", RFC 9167, DOI 10.17487/RFC9167, December
               2021, <https://www.rfc-editor.org/rfc/rfc9167>.
 
-8.2.  Informative References
+7.2.  Informative References
 
    [I-D.hartke-t2trg-coral-pubsub]
               Hartke, K., "Publish/Subscribe over the Constrained
