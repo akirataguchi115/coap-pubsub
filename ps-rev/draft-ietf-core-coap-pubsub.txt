@@ -183,17 +183,17 @@ Table of Contents
       it is up to the broker to decide whether and how a topic is
       created.  The broker also decides the URI of each topic.  The
       creation, configuration, and discovery of topics at a broker are
-      specified in Section 2.  Interactions about the topic data are in
+      specified in Section 2.  Interactions about the topic-data are in
       Section 2.7.
 
-   topic data resource:  Topic resources may contain a property called
-      "topic data".  The topic data resource is a CoAP URI used by
+   topic-data resource:  Topic resources contain a property called
+      "topic-data".  The topic-data resource is a CoAP URI used by
       publishers and subscribers to publish (POST) and subscribe (GET
       with Observe) to data (see Section 2).
 
    broker:  A CoAP server that hosts one or more topic collections
       containing topic resources.  The broker is responsible for the
-      store-and-forward of state update representations when the topic
+      store-and-forward of state update representations when the topic-
       data URI points to a resource hosted on the broker.  The broker is
       also responsible of handling the topic lifecycle as defined in
       Section 2.6.1.  The creation, configuration, and discovery of

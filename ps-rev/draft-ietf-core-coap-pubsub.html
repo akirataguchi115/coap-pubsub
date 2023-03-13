@@ -1370,17 +1370,17 @@ this specification.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
           <dd class="break"></dd>
 <dt id="section-1.2-3.5">topic resource:</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-3.6">
-            <p id="section-1.2-3.6.1">An entry within a topic collection in a broker. Topics are created and configured before any data can be published.  CoAP clients can propose new topics to be created, but it is up to the broker to decide whether and how a topic is created. The broker also decides the URI of each topic. The creation, configuration, and discovery of topics at a broker are specified in <a href="#topics" class="auto internal xref">Section 2</a>. Interactions about the topic data are in <a href="#topic-data-interactions" class="auto internal xref">Section 2.7</a>.<a href="#section-1.2-3.6.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-3.6.1">An entry within a topic collection in a broker. Topics are created and configured before any data can be published.  CoAP clients can propose new topics to be created, but it is up to the broker to decide whether and how a topic is created. The broker also decides the URI of each topic. The creation, configuration, and discovery of topics at a broker are specified in <a href="#topics" class="auto internal xref">Section 2</a>. Interactions about the topic-data are in <a href="#topic-data-interactions" class="auto internal xref">Section 2.7</a>.<a href="#section-1.2-3.6.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
-<dt id="section-1.2-3.7">topic data resource:</dt>
+<dt id="section-1.2-3.7">topic-data resource:</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-3.8">
-            <p id="section-1.2-3.8.1">Topic resources may contain a property called "topic data". The topic data resource is a CoAP URI used by publishers and subscribers to publish (POST) and subscribe (GET with Observe) to data (see <a href="#topics" class="auto internal xref">Section 2</a>).<a href="#section-1.2-3.8.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-3.8.1">Topic resources contain a property called "topic-data". The topic-data resource is a CoAP URI used by publishers and subscribers to publish (POST) and subscribe (GET with Observe) to data (see <a href="#topics" class="auto internal xref">Section 2</a>).<a href="#section-1.2-3.8.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
 <dt id="section-1.2-3.9">broker:</dt>
           <dd style="margin-left: 1.5em" id="section-1.2-3.10">
-            <p id="section-1.2-3.10.1">A CoAP server that hosts one or more topic collections containing topic resources. The broker is responsible for the store-and-forward of state update representations when the topic data URI points to a resource hosted on the broker. The broker is also responsible of handling the topic lifecycle as defined in <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>. The creation, configuration, and discovery of topics at a broker is specified in <a href="#topics" class="auto internal xref">Section 2</a>.<a href="#section-1.2-3.10.1" class="pilcrow">¶</a></p>
+            <p id="section-1.2-3.10.1">A CoAP server that hosts one or more topic collections containing topic resources. The broker is responsible for the store-and-forward of state update representations when the topic-data URI points to a resource hosted on the broker. The broker is also responsible of handling the topic lifecycle as defined in <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>. The creation, configuration, and discovery of topics at a broker is specified in <a href="#topics" class="auto internal xref">Section 2</a>.<a href="#section-1.2-3.10.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 </dl>
