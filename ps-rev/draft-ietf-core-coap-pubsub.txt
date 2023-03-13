@@ -96,8 +96,8 @@ Table of Contents
        2.7.1.  Publish
        2.7.2.  Subscribe
        2.7.3.  Unsubscribe
-       2.7.4.  Delete topic data
-       2.7.5.  Read Latest Data
+       2.7.4.  Delete topic data resource
+       2.7.5.  Read latest data
    3.  URI Templates
    4.  CoAP Pubsub Parameters
    5.  Security Considerations
@@ -695,9 +695,7 @@ Table of Contents
    When a topic resource is deleted, the broker SHOULD also delete the
    topic data resource, unsubscribe all subscribers by removing them
    from the list of observers and returning a final 4.04 (Not Found)
-   response as per [RFC7641] Section 3.2.
-
-   Example:
+   response as per [RFC7641] Section 3.2.  Example:
 
    => 0.04 DELETE
       Uri-Path: ps
@@ -914,7 +912,7 @@ Table of Contents
    CoAP GET with the Observe Option set to 1 or send a CoAP Reset
    message in response to a notification.
 
-2.7.4.  Delete topic data
+2.7.4.  Delete topic data resource
 
    A publisher MAY delete a topic by making a CoAP DELETE request on the
    'topic_data' URI.
@@ -922,7 +920,7 @@ Table of Contents
    On success, the server returns a 2.02 (Deleted) response.
 
    When a topic_data resource is deleted, the broker SHOULD also delete
-   the 'topic_data' parameter in the topic resopurce, unsubscribe all
+   the 'topic_data' parameter in the topic resource, unsubscribe all
    subscribers by removing them from the list of observers and return a
    final 4.04 (Not Found) response as per [RFC7641] Section 3.2.  The
    topic is then set back to the half created state as per
@@ -937,11 +935,12 @@ Table of Contents
 
    <= 2.02 Deleted
 
-2.7.5.  Read Latest Data
+2.7.5.  Read latest data
 
    A client can get the latest published topic data by making a GET
    request to the 'topic_data' URI in the broker.  Please note that
-   discovery of such URI is a required step (see Section 2.3.2)
+   discovery of the 'topic_data' parameter is a required previous step
+   (see Section 2.5.1).
 
    On success, the server MUST return 2.05 (Content) response with the
    data.
@@ -950,7 +949,7 @@ Table of Contents
    not in the fully created state (see Section 2.6.1), the broker SHOULD
    return a response code 4.04 (Not Found).
 
-   If the Broker can not return the requested content format it MUST
+   If the broker can not return the requested content format it MUST
    return a response code 4.15 (Unsupported Content Format).
 
    Example:

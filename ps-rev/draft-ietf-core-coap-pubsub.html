@@ -1264,10 +1264,10 @@ connectivity and/or up-time.<a href="#section-abstract-1" class="pilcrow">¶</a>
                     <p id="section-toc.1-1.2.2.7.2.3.1"><a href="#section-2.7.3" class="auto internal xref">2.7.3</a>.  <a href="#name-unsubscribe" class="internal xref">Unsubscribe</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.7.2.4">
-                    <p id="section-toc.1-1.2.2.7.2.4.1"><a href="#section-2.7.4" class="auto internal xref">2.7.4</a>.  <a href="#name-delete-topic-data" class="internal xref">Delete topic data</a></p>
+                    <p id="section-toc.1-1.2.2.7.2.4.1"><a href="#section-2.7.4" class="auto internal xref">2.7.4</a>.  <a href="#name-delete-topic-data-resource" class="internal xref">Delete topic data resource</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.7.2.5">
-                    <p id="section-toc.1-1.2.2.7.2.5.1"><a href="#section-2.7.5" class="auto internal xref">2.7.5</a>.  <a href="#name-read-latest-data" class="internal xref">Read Latest Data</a></p>
+                    <p id="section-toc.1-1.2.2.7.2.5.1"><a href="#section-2.7.5" class="auto internal xref">2.7.5</a>.  <a href="#name-read-latest-data" class="internal xref">Read latest data</a></p>
 </li>
                 </ul>
 </li>
@@ -1822,9 +1822,9 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
           </h4>
 <p id="section-2.5.4-1">A client can delete a topic by making a CoAP DELETE request on the topic resource URI.<a href="#section-2.5.4-1" class="pilcrow">¶</a></p>
 <p id="section-2.5.4-2">On success, the server returns a 2.02 (Deleted) response.<a href="#section-2.5.4-2" class="pilcrow">¶</a></p>
-<p id="section-2.5.4-3">When a topic resource is deleted, the broker <span class="bcp14">SHOULD</span> also delete the topic data resource, unsubscribe all subscribers by removing them from the list of observers and returning a final 4.04 (Not Found) response as per <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span> Section 3.2.<a href="#section-2.5.4-3" class="pilcrow">¶</a></p>
-<p id="section-2.5.4-4">Example:<a href="#section-2.5.4-4" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-2.5.4-5">
+<p id="section-2.5.4-3">When a topic resource is deleted, the broker <span class="bcp14">SHOULD</span> also delete the topic data resource, unsubscribe all subscribers by removing them from the list of observers and returning a final 4.04 (Not Found) response as per <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span> Section 3.2.
+Example:<a href="#section-2.5.4-3" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-2.5.4-4">
 <pre>
 =&gt; 0.04 DELETE
    Uri-Path: ps
@@ -1832,7 +1832,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
    Uri-Path: h9392
 
 &lt;= 2.02 Deleted
-</pre><a href="#section-2.5.4-5" class="pilcrow">¶</a>
+</pre><a href="#section-2.5.4-4" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -2014,12 +2014,12 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 </div>
 <div id="delete-topic-data">
 <section id="section-2.7.4">
-          <h4 id="name-delete-topic-data">
-<a href="#section-2.7.4" class="section-number selfRef">2.7.4. </a><a href="#name-delete-topic-data" class="section-name selfRef">Delete topic data</a>
+          <h4 id="name-delete-topic-data-resource">
+<a href="#section-2.7.4" class="section-number selfRef">2.7.4. </a><a href="#name-delete-topic-data-resource" class="section-name selfRef">Delete topic data resource</a>
           </h4>
 <p id="section-2.7.4-1">A publisher <span class="bcp14">MAY</span> delete a topic by making a CoAP DELETE request on the 'topic_data' URI.<a href="#section-2.7.4-1" class="pilcrow">¶</a></p>
 <p id="section-2.7.4-2">On success, the server returns a 2.02 (Deleted) response.<a href="#section-2.7.4-2" class="pilcrow">¶</a></p>
-<p id="section-2.7.4-3">When a topic_data resource is deleted, the broker <span class="bcp14">SHOULD</span> also delete the 'topic_data' parameter in the topic resopurce, unsubscribe all subscribers by removing them from the list of observers and return a final 4.04 (Not Found) response as per <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span> Section 3.2. The topic is then set back to the half created state as per <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>.<a href="#section-2.7.4-3" class="pilcrow">¶</a></p>
+<p id="section-2.7.4-3">When a topic_data resource is deleted, the broker <span class="bcp14">SHOULD</span> also delete the 'topic_data' parameter in the topic resource, unsubscribe all subscribers by removing them from the list of observers and return a final 4.04 (Not Found) response as per <span>[<a href="#RFC7641" class="cite xref">RFC7641</a>]</span> Section 3.2. The topic is then set back to the half created state as per <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>.<a href="#section-2.7.4-3" class="pilcrow">¶</a></p>
 <p id="section-2.7.4-4">Example:<a href="#section-2.7.4-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.7.4-5">
 <pre>
@@ -2036,12 +2036,12 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 <div id="read-data">
 <section id="section-2.7.5">
           <h4 id="name-read-latest-data">
-<a href="#section-2.7.5" class="section-number selfRef">2.7.5. </a><a href="#name-read-latest-data" class="section-name selfRef">Read Latest Data</a>
+<a href="#section-2.7.5" class="section-number selfRef">2.7.5. </a><a href="#name-read-latest-data" class="section-name selfRef">Read latest data</a>
           </h4>
-<p id="section-2.7.5-1">A client can get the latest published topic data by making a GET request to the 'topic_data' URI in the broker. Please note that discovery of such URI is a required step (see <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)<a href="#section-2.7.5-1" class="pilcrow">¶</a></p>
+<p id="section-2.7.5-1">A client can get the latest published topic data by making a GET request to the 'topic_data' URI in the broker. Please note that discovery of the 'topic_data' parameter is a required previous step (see <a href="#topic-get-resource" class="auto internal xref">Section 2.5.1</a>).<a href="#section-2.7.5-1" class="pilcrow">¶</a></p>
 <p id="section-2.7.5-2">On success, the server <span class="bcp14">MUST</span> return 2.05 (Content) response with the data.<a href="#section-2.7.5-2" class="pilcrow">¶</a></p>
 <p id="section-2.7.5-3">If the target URI does not match an existing resource or the topic is not in the fully created state (see <a href="#topic-lifecycle" class="auto internal xref">Section 2.6.1</a>), the broker <span class="bcp14">SHOULD</span> return a response code 4.04 (Not Found).<a href="#section-2.7.5-3" class="pilcrow">¶</a></p>
-<p id="section-2.7.5-4">If the Broker can not return the requested content format it <span class="bcp14">MUST</span> return a response code 4.15 (Unsupported Content Format).<a href="#section-2.7.5-4" class="pilcrow">¶</a></p>
+<p id="section-2.7.5-4">If the broker can not return the requested content format it <span class="bcp14">MUST</span> return a response code 4.15 (Unsupported Content Format).<a href="#section-2.7.5-4" class="pilcrow">¶</a></p>
 <p id="section-2.7.5-5">Example:<a href="#section-2.7.5-5" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-2.7.5-6">
 <pre>
