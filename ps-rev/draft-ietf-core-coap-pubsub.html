@@ -1692,7 +1692,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
    TBD (this should be a CBOR map)
    {
      "topic_name" : "living_room_sensor",
-     "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392"
+     "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392/data"
      "resource_type" : "core.ps.conf"
    }
 </pre><a href="#section-2.4.3-7" class="pilcrow">¶</a>
@@ -1728,7 +1728,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
    Content-Format: TBD2 (application/core-pubsub+cbor)
    {
       "topic_name" : "living_room_sensor",
-      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392/data",
       "resource_type": "core.ps.conf",
       "media_type": "application/senml-cbor",
       "target_attribute": "temperature",
@@ -1766,7 +1766,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 &lt;= 2.05 Content
    Content-Format: TBD2 (application/core-pubsub+cbor)
    {
-     "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+     "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392/data",
      "media_type": "application/senml-cbor"
    }
 
@@ -1792,7 +1792,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
 
    {
       "topic_name" : "living_room_sensor",
-      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392/data",
       "target_attribute": "temperature",
       "expiration_date": "2023-04-28T23:59:59Z",
       "max_subscribers": 2
@@ -1804,7 +1804,7 @@ Section <a href="#topic-discovery" class="auto internal xref">Section 2.3.2</a>)
    TBD (this should be a CBOR map)
    {
       "topic_name" : "living_room_sensor",
-      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392",
+      "topic_data" : "coap://[2001:db8::2]/ps/tc/h9392/data",
       "resource_type": "core.ps.conf",
       "media_type": "application/senml-cbor",
       "target_attribute": "temperature",
