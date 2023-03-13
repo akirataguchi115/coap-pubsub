@@ -77,7 +77,7 @@ Table of Contents
      2.2.  Topic Creation and Configuration
        2.2.1.  Configuration Properties
        2.2.2.  Status Properties
-       2.2.3.  Topic Configuration Representation
+       2.2.3.  Topic Resource Representation
      2.3.  Discovery
        2.3.1.  Broker Discovery
        2.3.2.  Topic Discovery
@@ -85,11 +85,11 @@ Table of Contents
        2.4.1.  Retrieving all topics
        2.4.2.  Getting Topics by Properties
        2.4.3.  Creating a Topic
-     2.5.  Topic Configuration Interactions
-       2.5.1.  Getting a topic configuration
-       2.5.2.  Getting part of a topic configuration by filter
-       2.5.3.  Updating the Topic Configuration
-       2.5.4.  Deleting a Topic Configuration
+     2.5.  Topic Resource Interactions
+       2.5.1.  Getting a topic resource
+       2.5.2.  Getting part of a topic resource by filter
+       2.5.3.  Updating the Topic Resource
+       2.5.4.  Deleting a Topic Resource
      2.6.  Publish/Subscribe
        2.6.1.  Topic Lifecycle
        2.6.2.  Rate Limiting
@@ -164,31 +164,38 @@ Table of Contents
 
    publish-subscribe (pub/sub):  A messaging paradigm in which messages
       are published to a broker, and potential receivers can subscribe
-      to the broker to receive messages.  Publishers do not need to know
-      where the message will be eventually sent.  The broker matches
-      publications and subscriptions, and delivers publications to
-      subscribed receivers.
+      to a broker to receive messages.  Message producers do not need to
+      know where the message will be eventually sent.  The broker
+      matches publications and subscriptions, and delivers publications
+      to subscribed receivers.
 
    publishers and subscribers:  CoAP clients can act as publishers or as
-      subscribers.  Publishers create topics and send CoAP messages
-      (publications) to the broker on specific topics.  Subscribers have
-      an ongoing observation relation (subscription) to a topic.
-      Publishers and subscribers do not need to have any knowledge of
-      each other, but they must share the topic they are publishing and
-      subscribing to.
+      subscribers.  Publishers propose topics for creation and send CoAP
+      messages (publications) to the broker on specific topics.
+      Subscribers have an ongoing observation relation (subscription) to
+      a topic.  Publishers and subscribers do not need to have any
+      knowledge of each other, but they must know the topic they are
+      publishing and subscribing to.
+
+   topic collection:  A resource collection is a group of related
+      resources that share a common base URI.  In this case the the
+      topic collection contains resources of the type "topic resource".
+      CoAP clients can discover and interact with the resources in a
+      collection by sending CoAP requests to the URI of the collection.
 
    topic resource:  An entry within a topic collection in a broker.
       Topics are created and configured before any data can be
       published.  CoAP clients can propose new topics to be created, but
       it is up to the broker to decide whether and how a topic is
-      created.  The broker also decides the URI of each topic.  The
+      created.  The broker also decides the URI of each topic resource
+      and of the topic-data resource when hosted at the broker.  The
       creation, configuration, and discovery of topics at a broker are
-      specified in Section 2.  Interactions about the topic-data are in
-      Section 2.7.
+      specified in Section 2.  Interactions about the topic-data are
+      defined in Section 2.7.
 
    topic-data resource:  Topic resources contain a property called
       "topic-data".  The topic-data resource is a CoAP URI used by
-      publishers and subscribers to publish (POST) and subscribe (GET
+      publishers and subscribers to publish (PUT) and subscribe (GET
       with Observe) to data (see Section 2).
 
    broker:  A CoAP server that hosts one or more topic collections
@@ -205,7 +212,7 @@ Table of Contents
    it, publishers submit their data over a RESTful interface to a
    broker-managed resource (topic) and subscribers observe this resource
    using [RFC7641].  Resource state information is updated between the
-   CoAP clients and the Broker via topics.  Topics are created by the
+   CoAP clients and the broker via topics.  Topics are created by the
    broker but the initial configuration can be proposed by a client,
    normally a publisher.
 
@@ -233,7 +240,7 @@ Table of Contents
    configure topics and their lifecycle (see Section 2.5) and
    interactions about the topic data (see Section 2.7).
 
-   Topic configuration interactions are discovery, create, read
+   Topic resource interactions are discovery, create, read
    configuration, update configuration, delete configuration and handle
    the management of the topics.
 
@@ -246,14 +253,14 @@ Table of Contents
    Figure 2 shows the resources of a Topic Collection that can be
    managed at the Broker.
 
-                    ___
-          Topic    /   \
-       Collection  \___/
-                        \
-                         \____________________
-                          \___    \___        \___
-                          /   \   /   \  ...  /   \        Topic
-                          \___/   \___/       \___/   Configurations
+                     ___
+           Topic    /   \
+        Collection  \___/
+                         \
+                          \____________________
+                           \___    \___        \___
+                           /   \   /   \  ...  /   \        Topic
+                           \___/   \___/       \___/      Resources
 
                       Figure 2: Resources of a Broker
 
@@ -266,10 +273,9 @@ Table of Contents
    The configuration side of a "publish/subscribe broker" consists of a
    collection of topics.  These topics as well as the collection itself
    are exposed by a CoAP server as resources (see Figure 3).  Each topic
-   has a topic configuration and a topic data resources.  Topic
-   configuration is used by a client creating or administering the topic
-   and topic data is used by the publishers and subscribers to the
-   topic.
+   has a topic and a topic data resources.  The topic resource is used
+   by a client creating or administering a topic.  The topic data
+   resource is used by the publishers and the subscribers to a topic.
 
                         ___
                 Topic  /   \
@@ -280,31 +286,32 @@ Table of Contents
                               \ ......   \ ......        \ ......
                              : \___  :  : \___  :       : \___  :
                       Topic  : / + \ :  : / + \ :       : / + \ :
-              Configuration  : \_|_/ :  : \_|_/ :       : \_|_/ :
+                   Resource  : \_|_/ :  : \_|_/ :       : \_|_/ :
                              ....|....  ....|....       ....|....
                              ....|....  ....|....       ....|....
-                             :  _|_  :  :  _|_  :  ...  :  _|_  :
-                      Topic  : /   \ :  : /   \ :       : /   \ :
-                       Data  : \___/ :  : \___/ :       : \___/ :
+                      Topic  :  _|_  :  :  _|_  :  ...  :  _|_  :
+                       Data  : /   \ :  : /   \ :       : /   \ :
+                   Resource  : \___/ :  : \___/ :       : \___/ :
                              :.......:  :.......:       :.......:
+                            \_________/\_________/ ... \_________/
                               topic 1    topic 2         topic n
 
-           Figure 3: Configuration and Data resources of a topic
+            Figure 3: Topic and topic-data resources of a topic
 
 2.1.  Collection Representation
 
-   Each topic-configuration is represented as a link, where the link
-   target is the URI of the topic-configuration resource.
+   Each topic resource is represented as a link, where the link target
+   is the URI of the topic resource.
 
    Each topic-data is represented as a link, where the link target is
    the URI of the topic-data resource.  A topic-data link is an entry
-   within the topic-configuration called 'topic_data_uri' (see
+   within the topic resource called 'topic_data_uri' (see
    Section 2.2.1).
 
    The list can be represented as a Link Format document [RFC6690].  The
-   link to each topic-configuration resource specifies the link target
-   attribute 'rt' (Resource Type), with value "core.pubsub.conf" defined
-   in this document.
+   link to each topic resource specifies the link target attribute 'rt'
+   (Resource Type), with value "core.pubsub.conf" defined in this
+   document.
 
 2.2.  Topic Creation and Configuration
 
@@ -339,7 +346,7 @@ Table of Contents
       for subscribing to a pubsub topic encoded as a CBOR text string.
 
    *  'rt', with value the resource type "core.ps.conf" associated with
-      topic configuration resources, encoded as a CBOR text string
+      topic resources, encoded as a CBOR text string
 
 2.2.2.  Status Properties
 
@@ -348,14 +355,13 @@ Table of Contents
 
    *  'conf_filter', is a CBOR map containing a CBOR array and with CBOR
       abbreviation defined in Section 4.  It is used with FETCH when
-      retrieving a partial representation of a topic configuration (see
+      retrieving a partial representation of a topic resource (see
       Section 2.5.2).
 
-2.2.3.  Topic Configuration Representation
+2.2.3.  Topic Resource Representation
 
-   A topic configuration is represented as a CBOR map containing the
-   configuration properties and status properties of the topic as top-
-   level elements.
+   A topic is represented as a CBOR map containing the configuration
+   properties and status properties of the topic as top-level elements.
 
    Unless specified otherwise, these are defined in this document and
    their CBOR abbreviations are defined in Section 4.
@@ -367,7 +373,7 @@ Table of Contents
 2.3.  Discovery
 
    Discovery involves that of the Broker, topic collections, topic
-   configurations and topic data.
+   resources and topic data.
 
 2.3.1.  Broker Discovery
 
@@ -403,19 +409,18 @@ Table of Contents
    The interactions with topic collections are further defined in
    Section 2.4.
 
-   A topic collection is a group of topic configuration resources that
-   define the properties of the topics themselves (see
-   Section Section 2.2.3).  Each topic configuration is represented as a
-   link to its corresponding resource URI.  The list can be represented
-   as a Link Format document [RFC6690].  Topic configuration resources
-   are identified by the resource type "core.ps.conf".
+   A topic collection is a group of topic resources that define the
+   properties of the topics themselves (see Section Section 2.2.3).
+   Each topic resource is represented as a link to its corresponding
+   resource URI.  The list can be represented as a Link Format document
+   [RFC6690].  Topic resources are identified by the resource type
+   "core.ps.conf".
 
-   Within each topic configuration resource there is a set of
-   configuration properties (see Section Section 2.2.1).  The
-   'topic_data_uri' property contains the URI of the topic data resource
-   that a CoAP client can subscribe to.  Resources exposing resources of
-   the topic data type are expected to use the resource type
-   'core.ps.data'.
+   Within each topic resource there is a set of configuration properties
+   (see Section Section 2.2.1).  The 'topic_data_uri' property contains
+   the URI of the topic data resource that a CoAP client can subscribe
+   to.  Resources exposing resources of the topic data type are expected
+   to use the resource type 'core.ps.data'.
 
 2.4.  Topic Collection Interactions
 
@@ -428,7 +433,7 @@ Table of Contents
    by making a GET request to the collection URI.
 
    On success, the server returns a 2.05 (Content) response with a
-   representation of the list of all topic configurations (see
+   representation of the list of all topic resources (see
    Section Section 2.2.3) in the collection.
 
    Depending on the permission set each client MAY receive a different
@@ -474,7 +479,7 @@ Table of Contents
 2.4.3.  Creating a Topic
 
    A client can add a new topic to a collection of topics by submitting
-   a representation of the initial topic configuration (see
+   a representation of the initial topic resource (see
    Section Section 2.2.3) in a POST request to the topic collection URI.
 
    The topic specification sent in the payload should use a supported
@@ -519,19 +524,19 @@ Table of Contents
         "topic_data_uri" : "coap://mybroker/td/sensor23"
       }
 
-2.5.  Topic Configuration Interactions
+2.5.  Topic Resource Interactions
 
-   These are the interactions that can happen at the topic configuration
+   These are the interactions that can happen at the topic resource
    level.
 
-2.5.1.  Getting a topic configuration
+2.5.1.  Getting a topic resource
 
    A client can read the configuration of a topic by making a GET
-   request to the topic configuration URI.
+   request to the topic resource URI.
 
    On success, the server returns a 2.05 (Content) response with a
-   representation of the topic configuration.  The response has as
-   payload the representation of the topic configuration as specified in
+   representation of the topic resource.  The response has as payload
+   the representation of the topic resource as specified in
    Section 2.2.3.
 
    If a topic manager (TBD) is present in the broker, retrieving topic
@@ -560,23 +565,23 @@ Table of Contents
         bar
       }
 
-2.5.2.  Getting part of a topic configuration by filter
+2.5.2.  Getting part of a topic resource by filter
 
    A client can read the configuration of a topic by making a FETCH
-   request to the topic configuration URI with a filter for specific
+   request to the topic resource URI with a filter for specific
    parameters.  This is done in order to retrieve part of the current
-   topic configuration.
+   topic resource.
 
    The request contains a CBOR map with a configuration filter or
    'conf_filter', a CBOR array and with CBOR abbreviation defined in
    Section 4.  Each element of the array specifies one requested
    configuration parameter or status parameter of the current topic
-   configuration (see Section 2.2.3).
+   resource (see Section 2.2.3).
 
    On success, the server returns a 2.05 (Content) response with a
-   representation of the topic configuration.  The response has as
-   payload the partial representation of the topic configuration as
-   specified in Section 2.2.3.
+   representation of the topic resource.  The response has as payload
+   the partial representation of the topic resource as specified in
+   Section 2.2.3.
 
    If a topic manager (TBD) is present in the broker, retrieving topic
    information may require manager approval subject to certain
@@ -611,12 +616,12 @@ Table of Contents
         "bar" : 5
       }
 
-2.5.3.  Updating the Topic Configuration
+2.5.3.  Updating the Topic Resource
 
    A client can update the configuration of a topic by submitting the
-   representation of the updated topic configuration (see Section 3.1.3)
-   in a PUT or POST request to the topic URI.  Any existing properties
-   in the configuration are overwritten by this update.
+   representation of the updated topic (see Section 3.1.3) in a PUT or
+   POST request to the topic URI.  Any existing properties in the
+   configuration are overwritten by this update.
 
    On success, the server returns a 2.04 (Updated) response.
 
@@ -643,15 +648,15 @@ Table of Contents
         "bar" : 5
       }
 
-2.5.4.  Deleting a Topic Configuration
+2.5.4.  Deleting a Topic Resource
 
    A client can delete a topic by making a CoAP DELETE request on the
-   topic configuration URI.
+   topic resource URI.
 
    On success, the server returns a 2.02 (Deleted) response.
 
-   When a topic configuration is deleted, the broker SHOULD also delete
-   the topic data resource, unsubscribe all subscribers by removing them
+   When a topic resource is deleted, the broker SHOULD also delete the
+   topic data resource, unsubscribe all subscribers by removing them
    from the list of observers and returning a final 4.04 (Not Found)
    response as per [RFC7641] Section 3.2.
 
@@ -675,9 +680,9 @@ Table of Contents
    are maintained and terminated as specified in [RFC7641].
 
    As shown in Section 2, each topic contains two resources: topic
-   configuration and topic data.  In that section we explained the
-   creation and configuration of the topic configuration resources.
-   This section will explain the management of topic data resources.
+   resource and topic data.  In that section we explained the creation
+   and configuration of the topic resources.  This section will explain
+   the management of topic data resources.
 
    A topic data resource does not exist until some initial data has been
    published to it.  Before initial data has been published, the topic
@@ -686,11 +691,11 @@ Table of Contents
    immediately publish some initial placeholder data to make the topic
    "fully created".
 
-   All URIs for configuration and data resources are broker-generated.
-   There does not need to be any URI pattern dependence between the URI
-   where the data exists and the URI of the topic configuration.  Topic
-   configuration and data resources might even be hosted on different
-   servers.
+   URIs for topic resources are broker-generated.  URIs for topic-data
+   MAY also be broker-generated or client-generated.  There does not
+   need to be any URI pattern dependence between the URI where the data
+   exists and the URI of the topic resource.  Topic resource and data
+   resources might even be hosted on different servers.
 
 2.6.1.  Topic Lifecycle
 
@@ -710,27 +715,26 @@ Table of Contents
                       | ^   \       ___       /   | ^
                 Read/ | |    '-->  |   |  <--'    | | Read/
                Update | |  Delete  |___|  Delete  | | Update
-                      '-'  Config         Config  '-'
+                      '-'  Topic          Topic   '-'
                                   DELETED
 
                        Figure 4: Lifecycle of a Topic
 
    After a publisher publishes to the topic for the first time, the
    topic is placed into the FULLY CREATED state.  In this state, a
-   client can read and update the configuration of the topic and delete
-   the topic; a publisher can publish to the topic data resource; and a
-   subscriber can observe the topic data resource.
+   client can read, update and delete the topic; a publisher can publish
+   to the topic data resource; and a subscriber can observe the topic
+   data resource.
 
-   When a client deletes a topic configuration, the topic is placed into
-   the DELETED state and shortly after removed from the server.  In this
+   When a client deletes a topic resource, the topic is placed into the
+   DELETED state and shortly after removed from the server.  In this
    state, all subscribers are removed from the list of observers of the
    topic data resource and no further interactions with the topic are
    possible.
 
    When a client deletes a topic data, the topic is placed into the HALF
-   CREATED state, where clients can read, update and delete the
-   configuration of the topic and awaits for a publisher to begin
-   publication.
+   CREATED state, where clients can read, update and delete the topic
+   and awaits for a publisher to begin publication.
 
 2.6.2.  Rate Limiting
 
@@ -764,13 +768,13 @@ Table of Contents
    A client can publish data to a topic by submitting the data in a PUT
    request to the topic data URI.  The topic data URI is indicated by
    the status property of type http://coreapps.org/pubsub#data
-   (http://coreapps.org/pubsub#data) in the topic configuration.  Please
-   note that the topic data URI is not the same as the topic URI.
+   (http://coreapps.org/pubsub#data) in the topic resource.  Please note
+   that the topic data URI is not the same as the topic URI.
 
    The data MUST be in the content format specified by the configuration
    property http://coreapps.org/pubsub#accept (http://coreapps.org/
-   pubsub#accept) in the topic configuration.  Brokers MUST reject
-   publish operations which do not use the specified content format.
+   pubsub#accept) in the topic resource.  Brokers MUST reject publish
+   operations which do not use the specified content format.
 
    On success, the server returns a 2.04 (Updated) response.  However,
    when data is published to the topic for the first time, the server
