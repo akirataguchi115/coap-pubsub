@@ -700,9 +700,9 @@ Table of Contents
    Example:
 
    => 0.04 DELETE
-      Uri-Path: pubsub
-      Uri-Path: topics
-      Uri-Path: 1234
+      Uri-Path: ps
+      Uri-Path: tc
+      Uri-Path: h9392
 
    <= 2.02 Deleted
 
