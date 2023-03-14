@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2023-03-02T00:59:49.053843+00:00",
+  "timestamp": "2023-03-14T00:47:02.834612+00:00",
   "repo": "core-wg/coap-pubsub",
   "labels": [
     {
@@ -1504,6 +1504,32 @@
       "mergeCommit": {
         "oid": "98770b7d757981760486007ebbe500939e534bb1"
       },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 49,
+      "id": "PR_kwDOBEc_t85L70r5",
+      "title": "Merging v12 on main",
+      "url": "https://github.com/core-wg/coap-pubsub/pull/49",
+      "state": "OPEN",
+      "author": "jaimejim",
+      "authorAssociation": "MEMBER",
+      "assignees": [],
+      "labels": [],
+      "body": "New pubsub draft merge",
+      "createdAt": "2023-03-13T21:12:12Z",
+      "updatedAt": "2023-03-13T21:17:10Z",
+      "baseRepository": "core-wg/coap-pubsub",
+      "baseRefName": "main",
+      "baseRefOid": "e1b2724949b44830f244acfee0b1d61537ff2a32",
+      "headRepository": "core-wg/coap-pubsub",
+      "headRefName": "ps-rev",
+      "headRefOid": "0b50aa2b88663bdb547d44979202e6c073067d1e",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
       "comments": [],
       "reviews": []
     }
